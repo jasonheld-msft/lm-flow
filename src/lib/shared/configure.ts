@@ -55,7 +55,7 @@ export async function wrapper<T extends {[key: string]: any}>(
   }
 }
 
-function configure(command: Command, {env, input, output}: Options): ILogger {
+function configure(command: Command, {env}: Options): ILogger {
   const logger = new Logger();
   try {
     const date = DateTime.now().toLocaleString(

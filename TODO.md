@@ -1,10 +1,15 @@
+* Top
+  * Move .env configuration out of configure() - separate from logger.
+  * Handle exceptions in eval
+  * Seaparte inference from eval
+  * Test case loader/validator
 * README.md
   * Toolchain configuration
   * Build
   * Run
   * Explain design
 * Reuse
-  * Tree walker
+  * x File tree walker
   * Boolean tag expressions
   * SHA computation
   * LLM invocation

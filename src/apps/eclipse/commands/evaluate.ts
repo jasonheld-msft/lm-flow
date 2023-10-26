@@ -12,9 +12,18 @@ export async function evaluate(this: Command, options: EvaluateOptions) {
 }
 
 export async function evaluateInternal(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   logger: ILogger,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configuration: Configuration,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options: EvaluateOptions
 ) {
   console.log('Evaluate command not implemented.');
+
+  // Set up application
+  // Set up models
+  // Load test cases
+  // Filter test cases
+  // For-loop over test cases
 }

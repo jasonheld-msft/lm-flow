@@ -12,8 +12,11 @@ export async function format(this: Command, options: FormatOptions) {
 }
 
 export async function formatInternal(
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   logger: ILogger,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   configuration: Configuration,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options: FormatOptions
 ) {
   console.log('Format command not implemented.');
