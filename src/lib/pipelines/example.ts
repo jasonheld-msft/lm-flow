@@ -94,13 +94,21 @@ async function go() {
   ] as const;
 
   const application = new Application(stages);
-  const testCase = {
-    input: 'hello, world',
-    expected: [2, 'hello hello'] as const,
-  };
-  const logs = await application.eval(models, testCase);
-  console.log(JSON.stringify(logs, null, 2));
-  // console.log(stage.makePrompt('hello world'));
+  const testCases = [
+    {
+      input: 'hello, world',
+      expected: [2, 'hello hello'] as const,
+    },
+    {
+      input: 'hi there',
+      expected: [2, 'hello hello'] as const,
+    },
+  ];
+
+  for (const testCase of testCases) {
+    const logs = await application.eval(models, testCase);
+    console.log(JSON.stringify(logs, null, 2));
+  }
 }
 
 go();

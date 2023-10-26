@@ -1,10 +1,19 @@
 * Top
-  * Add logging to inference and eval
+  * Add hash to test cases
+  * Test case loader/validator
+  * Test runner
+  * Zod
+  * Recommended packages
+  * Dev container
+  * OpenAI integration
+  * Clean up naming
+  * . Add logging to inference and eval
+  * Write logs
+  * Naming
+    * Run folder
   * Separate inference from eval
   * Handle exceptions in eval
-  * Test case loader/validator
   * Move .env configuration out of configure() - separate from logger.
-  * Add hash to test cases
 * README.md
   * Toolchain configuration
   * Build
@@ -18,11 +27,8 @@
   * x LICENSE
 * Configure
   * Test suite
-  * Recommended packages
   * x Commander
   * x Dotenv
-  * Zod
-  * Dev container
   * x .gitignore
   * x Node engine version
 * Design

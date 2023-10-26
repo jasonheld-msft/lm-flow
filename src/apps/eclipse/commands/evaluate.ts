@@ -1,6 +1,7 @@
 import {Command} from 'commander';
 
 import {Configuration, ILogger, wrapper} from '../../../lib/shared';
+import {evaluateTestCases} from '../../../lib/core';
 
 export interface EvaluateOptions {
   dryrun?: boolean;
@@ -26,4 +27,5 @@ export async function evaluateInternal(
   // Load test cases
   // Filter test cases
   // For-loop over test cases
+  await evaluateTestCases(configuration);
 }

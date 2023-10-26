@@ -8,7 +8,9 @@ export type Output<T extends ReadonlyArray<Stage<unknown, unknown, unknown>>> =
     ? O
     : never;
 
-type Expected<T extends ReadonlyArray<Stage<unknown, unknown, unknown>>> = {
+export type Expected<
+  T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
+> = {
   [K in keyof T]: T[K] extends Stage<unknown, infer O, unknown> ? O : never;
 };
 
@@ -43,6 +45,7 @@ export interface StageLog<INPUT, OUTPUT, JUDGEMENT> {
   prompt: string;
   completion: string;
   output: OUTPUT;
+  expected: OUTPUT;
   judgement: JUDGEMENT;
 }
 
