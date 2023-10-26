@@ -4,7 +4,13 @@ export class AvailableModels implements IAvailableModels {
   private nameToModel = new Map<string, IModel>();
   private stageModelOverrides = new Map<string, string>();
 
-  addModel(model: IModel) {
+  constructor(models: IModel[]) {
+    for (const model of models) {
+      this.addModel(model);
+    }
+  }
+
+  private addModel(model: IModel) {
     const name = model.name();
     if (this.nameToModel.has(name)) {
       throw new Error(`Attempting to add duplicate model ${name}`);
@@ -74,6 +80,61 @@ export class ReverseModel implements IModel {
 
   async complete(prompt: string): Promise<string> {
     return prompt.split('').reverse().join('');
+  }
+
+  async train(): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+}
+
+interface CachedCompletion {
+  prompt: string;
+  completion: string;
+}
+
+export class MockModel implements IModel {
+  private _name;
+  private responses: Map<string, string>;
+  private defaultResponse: string;
+  private exactMatch: boolean;
+
+  constructor(
+    name: string,
+    exactMatch: boolean,
+    defaultResponse: string,
+    responses: CachedCompletion[]
+  ) {
+    this._name = name;
+
+    this.responses = new Map<string, string>(
+      responses.map(({prompt, completion}) => {
+        if (exactMatch) {
+          return [prompt, completion];
+        } else {
+          return [prompt.toLowerCase(), completion.toLowerCase()];
+        }
+      })
+    );
+
+    this.defaultResponse = defaultResponse;
+    this.exactMatch = exactMatch;
+  }
+
+  name(): string {
+    return this._name;
+  }
+
+  async complete(prompt: string): Promise<string> {
+    if (this.exactMatch) {
+      return this.responses.get(prompt) || this.defaultResponse;
+    } else {
+      for (const [substring, completion] of this.responses.entries()) {
+        if (prompt.includes(substring)) {
+          return completion;
+        }
+      }
+    }
+    return this.defaultResponse;
   }
 
   async train(): Promise<void> {
