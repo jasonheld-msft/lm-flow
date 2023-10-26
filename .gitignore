@@ -32,12 +32,8 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # local env files
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env.ignore
+.env*
+!.env.template
 
 # Shell history - produced by this project's Shell class
 *.history
