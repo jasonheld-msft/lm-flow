@@ -1,8 +1,11 @@
 * Top
-  * Add hash to test cases
-  * Test case loader/validator
+  * Force type error if ZodTypes are wrong in Stage.
+  * x Add hash to test cases
+  * Consider hashing object without tags field.
+    * Parse, remove tags, serialize, hash.
+  * x Test case loader/validator
   * Test runner
-  * Zod
+  * x Zod
   * Recommended packages
   * Dev container
   * OpenAI integration
@@ -10,7 +13,7 @@
   * . Add logging to inference and eval
   * Write logs
   * Naming
-    * Run folder
+    * Run folder - Date followed by GUID?
   * Separate inference from eval
   * Handle exceptions in eval
   * Move .env configuration out of configure() - separate from logger.

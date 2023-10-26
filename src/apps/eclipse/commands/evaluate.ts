@@ -3,6 +3,8 @@ import {Command} from 'commander';
 import {Configuration, ILogger, wrapper} from '../../../lib/shared';
 import {evaluateTestCases} from '../../../lib/core';
 
+import {makeStages} from '../../../lib/pipelines/example';
+
 export interface EvaluateOptions {
   dryrun?: boolean;
   env?: string;
@@ -22,10 +24,11 @@ export async function evaluateInternal(
 ) {
   console.log('Evaluate command not implemented.');
 
+  const stages = makeStages();
   // Set up application
   // Set up models
   // Load test cases
   // Filter test cases
   // For-loop over test cases
-  await evaluateTestCases(configuration);
+  await evaluateTestCases(configuration, stages);
 }

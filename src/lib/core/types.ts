@@ -1,4 +1,5 @@
 import {DateTime} from 'luxon';
+import z from 'zod';
 
 export type Input<T extends ReadonlyArray<Stage<unknown, unknown, unknown>>> =
   T[0] extends Stage<infer I, unknown, unknown> ? I : never;
@@ -35,6 +36,11 @@ export interface Stage<INPUT, OUTPUT, JUDGEMENT> extends StageBase {
   backProject(output: OUTPUT): string;
   project(completion: string): OUTPUT;
   judge(output: OUTPUT, expected: OUTPUT): JUDGEMENT;
+  types(): {
+    input: z.ZodTypeAny;
+    output: z.ZodTypeAny;
+    judgment: z.ZodTypeAny;
+  };
 }
 
 export interface StageLog<INPUT, OUTPUT, JUDGEMENT> {

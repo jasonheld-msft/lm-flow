@@ -1,5 +1,6 @@
 import dedent from 'dedent';
 import Handlebars from 'handlebars';
+import z from 'zod';
 
 import {Application, AvailableModels, MockModel, Stage} from '../core';
 
@@ -43,6 +44,17 @@ class Stage1
   judge(output: number, expected: number): boolean {
     return output === expected;
   }
+
+  // foo(): z.ZodTypeAny {
+  //   return z.string();
+  // }
+  types() {
+    return {
+      input: z.string(),
+      output: z.number(),
+      judgment: z.boolean(),
+    };
+  }
 }
 
 class Stage2
@@ -73,6 +85,22 @@ class Stage2
   judge(output: string, expected: string): boolean {
     return output === expected;
   }
+
+  types() {
+    return {
+      input: z.number(),
+      output: z.string(),
+      judgment: z.boolean(),
+    };
+  }
+}
+
+export function makeStages() {
+  const stages = [
+    new Stage1('stage1', 'stage1model'),
+    new Stage2('stage2', 'stage2model'),
+  ] as const;
+  return stages;
 }
 
 async function go() {
@@ -111,4 +139,4 @@ async function go() {
   }
 }
 
-go();
+// go();
