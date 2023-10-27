@@ -1,4 +1,4 @@
-import {PeekableSequence} from './peekable-sequence';
+import {PeekableSequence} from './peekable-sequence.js';
 
 export type SuitePredicate = (suites: string[]) => boolean;
 

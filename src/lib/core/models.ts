@@ -1,4 +1,4 @@
-import {IAvailableModels, IModel, StageBase} from './types';
+import {IAvailableModels, IModel, StageBase} from './types.js';
 
 export class AvailableModels implements IAvailableModels {
   private nameToModel = new Map<string, IModel>();

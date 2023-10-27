@@ -1,6 +1,6 @@
 import {Command} from 'commander';
 
-import {Configuration, ILogger, wrapper} from '../../../lib/shared';
+import {Configuration, ILogger, wrapper} from '../../../lib/shared/index.js';
 
 export interface FormatOptions {
   dryrun?: boolean;

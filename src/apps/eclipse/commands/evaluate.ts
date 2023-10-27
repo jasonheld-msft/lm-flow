@@ -1,9 +1,9 @@
 import {Command} from 'commander';
 
-import {Configuration, ILogger, wrapper} from '../../../lib/shared';
-import {evaluateTestCases} from '../../../lib/core';
+import {Configuration, ILogger, wrapper} from '../../../lib/shared/index.js';
+import {evaluateTestCases} from '../../../lib/core/index.js';
 
-import {makeStages} from '../../../lib/pipelines/example';
+import {makeStages} from '../../../lib/pipelines/example.js';
 
 export interface EvaluateOptions {
   concurrancy?: number;

@@ -2,7 +2,7 @@
   "name": "eclipse",
   "version": "0.0.0",
   "description": "LLM training and evaluation tool",
-  "IGNORE_type":"module",
+  "type":"module",
   "exports": "./build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [

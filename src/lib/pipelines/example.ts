@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import Handlebars from 'handlebars';
 import z from 'zod';
 
-import {Application, AvailableModels, MockModel, Stage} from '../core';
+import {Application, AvailableModels, MockModel, Stage} from '../core/index.js';
 
 class HandlebarsStage<T> {
   template: HandlebarsTemplateDelegate;

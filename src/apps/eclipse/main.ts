@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 import {program} from 'commander';
 
-import {evaluate, format, train} from './commands';
+import {evaluate, format, train} from './commands/index.js';
 
 import {
   defaultInputFolder,
   defaultOutputFolder,
-} from '../../lib/shared/constants';
+} from '../../lib/shared/index.js';
 
 async function main() {
   const concurrancyOption = [

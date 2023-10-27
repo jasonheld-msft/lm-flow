@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import {DateTime} from 'luxon';
 
-import {defaultInputFolder, defaultOutputFolder} from './constants';
-import {ILogger, Logger} from './logger';
-import {SuitePredicate, suitePredicate} from './suite-predicate';
+import {defaultInputFolder, defaultOutputFolder} from './constants.js';
+import {ILogger, Logger} from './logger.js';
+import {SuitePredicate, suitePredicate} from './suite-predicate.js';
 
 export interface Options {
   concurrancy?: string;

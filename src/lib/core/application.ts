@@ -7,7 +7,7 @@ import {
   StageLogType,
   StageLogs,
   TestCase,
-} from './types';
+} from './types.js';
 
 export class Application<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>

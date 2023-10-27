@@ -1,16 +1,18 @@
 import yaml from 'js-yaml';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-// import pLimit from 'p-limit';
+import pLimit from 'p-limit';
 import z from 'zod';
 import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
 
-import {Stage} from '../core';
-import {Configuration, filesFromFolder} from '../shared';
+import {Stage} from '../core/index.js';
+import {Configuration, filesFromFolder} from '../shared/index.js';
 
 export async function evaluateTestCases<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
 >(configuration: Configuration, stages: T) {
+  const limit = pLimit(configuration.concurrancy);
+
   const validator = z.object({
     tags: z.array(z.string()).optional(),
     sha: z.string(),
@@ -24,7 +26,7 @@ export async function evaluateTestCases<
   const files = await filesFromFolder(configuration.inputFolder);
 
   // Load, hash, parse, and validate each test case.
-  const promises = files.map(f => readFile(f));
+  const promises = files.map(f => limit(readFile, f));
   const buffers = await Promise.all(promises);
   const testCases = buffers.map((buffer, i) => {
     const sha = createHash('sha256').update(buffer).digest('hex');
@@ -52,7 +54,6 @@ export async function evaluateTestCases<
   }
 
   // For each case, evaluate and add results to list.
-  // const limit = pLimit(1);
 
   // Serialize list to disk.
 }
