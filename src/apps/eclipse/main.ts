@@ -21,9 +21,8 @@ async function main() {
   ] as const;
 
   const filterOption = [
-    '-f, --filter',
+    '-f, --filter <expression>',
     'boolean expression of tags',
-    'true',
   ] as const;
 
   const inputOption = [

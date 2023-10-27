@@ -3,11 +3,13 @@ import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import {DateTime} from 'luxon';
 
-import {ILogger, Logger} from './logger';
 import {defaultInputFolder, defaultOutputFolder} from './constants';
+import {ILogger, Logger} from './logger';
+import {SuitePredicate, suitePredicate} from './suite-predicate';
 
 export interface Options {
   env?: string;
+  filter?: string;
   input?: string;
   key?: string;
   output?: string;
@@ -15,6 +17,7 @@ export interface Options {
 
 export interface Configuration {
   env?: string;
+  filter: SuitePredicate;
   inputFolder: string;
   openAIKey?: string;
   outputFolder: string;
@@ -102,12 +105,16 @@ function validateConfiguration(
 
   const openAIKey = options.key || process.env.OPENAI_KEY;
 
+  const filter = options.filter ? suitePredicate(options.filter) : () => true;
+
   logger.info('Configuration:', 1);
   logger.info(`  INPUT_FOLDER: ${inputFolder}`, 1);
   logger.info(`  OUTPUT_FOLDER: ${outputFolder}`, 1);
+  logger.info(`  FILTER: ${options.filter || '(no filter)'}`, 1);
   // Do not log openAIKey
 
   return {
+    filter,
     inputFolder,
     openAIKey,
     outputFolder,

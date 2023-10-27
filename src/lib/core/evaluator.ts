@@ -41,9 +41,12 @@ export async function evaluateTestCases<
   });
 
   // Filter test cases.
+  const filteredTestCases = testCases.filter(c =>
+    configuration.filter(c.tags || [])
+  );
 
   // TEMPORARY: Print out test cases.
-  for (const testCase of testCases) {
+  for (const testCase of filteredTestCases) {
     console.log(JSON.stringify(testCase, null, 2));
   }
   // For each case, evaluate and add results to list.

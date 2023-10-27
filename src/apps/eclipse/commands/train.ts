@@ -5,6 +5,7 @@ import {Configuration, ILogger, wrapper} from '../../../lib/shared';
 export interface TrainOptions {
   dryrun?: boolean;
   env?: string;
+  filter?: string;
 }
 
 export async function train(this: Command, options: TrainOptions) {

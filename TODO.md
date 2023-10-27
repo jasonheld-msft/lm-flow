@@ -30,12 +30,13 @@
   * Explain design
 * Reuse
   * x File tree walker
-  * Boolean tag expressions
+  * x Filter by boolean tag expressions
+  * Bring over suite-predicate.test.ts
   * SHA computation
   * LLM invocation
   * x LICENSE
 * Configure
-  * Test suite
+  * Jest or Mocha tests
   * x Commander
   * x Dotenv
   * x .gitignore

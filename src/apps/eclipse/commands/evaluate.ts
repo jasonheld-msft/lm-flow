@@ -8,6 +8,7 @@ import {makeStages} from '../../../lib/pipelines/example';
 export interface EvaluateOptions {
   dryrun?: boolean;
   env?: string;
+  filter?: string;
 }
 
 export async function evaluate(this: Command, options: EvaluateOptions) {
