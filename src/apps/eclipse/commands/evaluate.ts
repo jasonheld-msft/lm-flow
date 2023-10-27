@@ -1,9 +1,11 @@
 import {Command} from 'commander';
+import {DateTime} from 'luxon';
+import os from 'os';
 
 import {Configuration, ILogger, wrapper} from '../../../lib/shared/index.js';
 import {evaluateTestCases} from '../../../lib/core/index.js';
 
-import {makeStages} from '../../../lib/pipelines/example.js';
+import {makeModels, makeStages} from '../../../lib/pipelines/example.js';
 
 export interface EvaluateOptions {
   concurrancy?: number;
@@ -26,11 +28,18 @@ export async function evaluateInternal(
 ) {
   console.log('Evaluate command not implemented.');
 
+  const models = makeModels();
   const stages = makeStages();
-  // Set up application
-  // Set up models
-  // Load test cases
-  // Filter test cases
-  // For-loop over test cases
-  await evaluateTestCases(configuration, stages);
+
+  const user = os.userInfo().username;
+  const cwd = process.cwd();
+  const date = DateTime.now().toLocaleString(DateTime.DATETIME_FULL);
+  // command line
+  // configuration
+  // eclipse version
+  // models description
+  const info = {user, cwd, date};
+  console.log(JSON.stringify(info, null, 2));
+
+  await evaluateTestCases(configuration, models, stages);
 }

@@ -33,21 +33,6 @@ export class Application<
   }
 }
 
-// async function evalRecursion<
-//   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
-// >(models: IAvailableModels, input: Input<T>, stages: T): Promise<Output<T>> {
-//   const [stage, ...remainingStages] = stages;
-//   const prompt = stage.makePrompt(input);
-//   const model = models.getModel(stage);
-//   const completion = await model.complete(prompt);
-//   const result = stage.project(completion);
-//   if (remainingStages.length > 0) {
-//     return evalRecursion(models, result, remainingStages);
-//   } else {
-//     return result as Output<T>;
-//   }
-// }
-
 async function evalRecursion2<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
 >(
@@ -62,7 +47,7 @@ async function evalRecursion2<
   const model = models.getModel(stage);
   const completion = await model.complete(prompt);
   const result = stage.project(completion);
-  const judgement = stage.judge(result, expect);
+  const judgment = stage.judge(result, expect);
   const log: StageLogType<typeof stage> = {
     timestamp: DateTime.now(),
     stage: stage.name,
@@ -72,7 +57,7 @@ async function evalRecursion2<
     completion,
     output: result,
     expected: expect,
-    judgement,
+    judgment,
   };
   if (remainingStages.length > 0) {
     return [

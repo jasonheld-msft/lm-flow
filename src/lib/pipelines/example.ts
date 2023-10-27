@@ -25,7 +25,7 @@ class Stage1
 
   constructor(name: string, model: string) {
     super(dedent`
-      [system] You are an assistant that counts the number of workds in the user text prompt.
+      [system] You are an assistant that counts the number of words in the user text prompt.
       [user] {{input}}
       `);
     this.name = name;
@@ -103,6 +103,21 @@ export function makeStages() {
   return stages;
 }
 
+export function makeModels() {
+  const models = new AvailableModels([
+    new MockModel('stage1model', false, '0', [
+      {prompt: 'hello, world', completion: '2'},
+      {prompt: 'hello', completion: '1'},
+    ]),
+    new MockModel('stage2model', false, "I don't understand", [
+      {prompt: '0', completion: 'goodbye'},
+      {prompt: '1', completion: 'hello'},
+      {prompt: '2', completion: 'hello hello'},
+    ]),
+  ]);
+  return models;
+}
+
 async function go() {
   const models = new AvailableModels([
     new MockModel('stage1model', false, '0', [
@@ -124,10 +139,14 @@ async function go() {
   const application = new Application(stages);
   const testCases = [
     {
+      sha: 'abc',
+      path: 'a/b/c',
       input: 'hello, world',
       expected: [2, 'hello hello'] as const,
     },
     {
+      sha: 'def',
+      path: 'd/e/f',
       input: 'hi there',
       expected: [2, 'hello hello'] as const,
     },

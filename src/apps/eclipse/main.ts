@@ -57,7 +57,7 @@ async function main() {
 
   program
     .command('eval')
-    .description('Evalutate a multi-model system')
+    .description('Evaluate a multi-model system')
     .option(...concurrancyOption)
     .option(...dryrunOption)
     .option(...envOption)

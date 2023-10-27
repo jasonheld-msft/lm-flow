@@ -128,8 +128,9 @@ export class MockModel implements IModel {
     if (this.exactMatch) {
       return this.responses.get(prompt) || this.defaultResponse;
     } else {
+      const prompt2 = prompt.toLowerCase();
       for (const [substring, completion] of this.responses.entries()) {
-        if (prompt.includes(substring)) {
+        if (prompt2.includes(substring)) {
           return completion;
         }
       }

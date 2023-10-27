@@ -1,10 +1,13 @@
 * Top
+  * judgement spelling workds
+  * Models definition file and command-line argument
   * Add context to TestCases
   * Add command line, configuration, user, cwd to log
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
   * Force type error if ZodTypes are wrong in Stage.types.
   * Test runner
+    * Move makeModels() and makeStages() to configuration.
     * Naming
       * Run folder - Date followed by GUID?
     * Batch running

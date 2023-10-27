@@ -31,11 +31,11 @@ export interface StageBase {
   defaultModel: string;
 }
 
-export interface Stage<INPUT, OUTPUT, JUDGEMENT> extends StageBase {
+export interface Stage<INPUT, OUTPUT, JUDGMENT> extends StageBase {
   makePrompt(input: INPUT): string;
   backProject(output: OUTPUT): string;
   project(completion: string): OUTPUT;
-  judge(output: OUTPUT, expected: OUTPUT): JUDGEMENT;
+  judge(output: OUTPUT, expected: OUTPUT): JUDGMENT;
   types(): {
     input: z.ZodTypeAny;
     output: z.ZodTypeAny;
@@ -43,7 +43,7 @@ export interface Stage<INPUT, OUTPUT, JUDGEMENT> extends StageBase {
   };
 }
 
-export interface StageLog<INPUT, OUTPUT, JUDGEMENT> {
+export interface StageLog<INPUT, OUTPUT, JUDGMENT> {
   timestamp: DateTime;
   stage: string;
   model: string;
@@ -52,13 +52,15 @@ export interface StageLog<INPUT, OUTPUT, JUDGEMENT> {
   completion: string;
   output: OUTPUT;
   expected: OUTPUT;
-  judgement: JUDGEMENT;
+  judgment: JUDGMENT;
 }
 
 export interface TestCase<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
 > {
   tags?: string[];
+  sha: string;
+  path: string;
   input: Input<T>;
   expected: Expected<T>;
 }
