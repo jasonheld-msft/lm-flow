@@ -1,19 +1,25 @@
 * Top
-  * Force type error if ZodTypes are wrong in Stage.
+  * Add context to TestCases
+  * Add command line, configuration, user, cwd to log
+  * Force type error if ZodTypes are wrong in Stage.types.
   * x Add hash to test cases
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
   * x Test case loader/validator
   * Test runner
+    * Naming
+      * Run folder - Date followed by GUID?
+    * Batch running
+    * Write logs
+      * Need ability to write failed log.
+      * Need some way to parse logs without pipeline
+  * Test result formatter
   * x Zod
-  * Recommended packages
-  * Dev container
+  * x Recommended extensions
+  * x Dev container
   * OpenAI integration
-  * Clean up naming
+  * Clean up variable, function, class, type naming
   * . Add logging to inference and eval
-  * Write logs
-  * Naming
-    * Run folder - Date followed by GUID?
   * Separate inference from eval
   * Handle exceptions in eval
   * Move .env configuration out of configure() - separate from logger.
