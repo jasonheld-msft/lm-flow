@@ -42,8 +42,7 @@ async function main() {
 
   const modelsOption = [
     '-m, --models',
-    'comma separated list of models',
-    // TODO: default value
+    'path to model desciption file (default from environment)',
   ] as const;
 
   const outputOption = [

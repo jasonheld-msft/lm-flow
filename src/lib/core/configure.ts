@@ -3,9 +3,11 @@ import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import {DateTime} from 'luxon';
 
-import {defaultInputFolder, defaultOutputFolder} from './constants.js';
-import {ILogger, Logger} from './logger.js';
-import {SuitePredicate, suitePredicate} from './suite-predicate.js';
+import {IAvailableModels, loadModels} from './index.js';
+
+import {defaultInputFolder, defaultOutputFolder} from '../shared/constants.js';
+import {ILogger, Logger} from '../shared/logger.js';
+import {SuitePredicate, suitePredicate} from '../shared/suite-predicate.js';
 
 export interface Options {
   concurrancy?: string;
@@ -13,6 +15,7 @@ export interface Options {
   filter?: string;
   input?: string;
   key?: string;
+  models?: string;
   output?: string;
 }
 
@@ -21,6 +24,7 @@ export interface Configuration {
   env?: string;
   filter: SuitePredicate;
   inputFolder: string;
+  models: IAvailableModels;
   openAIKey?: string;
   outputFolder: string;
 }
@@ -105,9 +109,14 @@ function validateConfiguration(
   const outputFolder =
     options.output || process.env.OUTPUT_FOLDER || defaultOutputFolder;
 
+  const modelsFile =
+    options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
+  const models = loadModels(modelsFile);
+
   const openAIKey = options.key || process.env.OPENAI_KEY;
 
   const filter = options.filter ? suitePredicate(options.filter) : () => true;
+
   const concurrancy = options.concurrancy
     ? Number(options.concurrancy)
     : Infinity;
@@ -123,6 +132,7 @@ function validateConfiguration(
     concurrancy,
     filter,
     inputFolder,
+    models,
     openAIKey,
     outputFolder,
   };

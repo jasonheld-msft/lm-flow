@@ -33,8 +33,8 @@ export interface StageBase {
 
 export interface Stage<INPUT, OUTPUT, JUDGMENT> extends StageBase {
   makePrompt(input: INPUT): string;
-  backProject(output: OUTPUT): string;
-  project(completion: string): OUTPUT;
+  makeTrainingCase(output: OUTPUT): string;
+  parseCompletion(completion: string): OUTPUT;
   judge(output: OUTPUT, expected: OUTPUT): JUDGMENT;
   types(): {
     input: z.ZodTypeAny;
@@ -67,6 +67,7 @@ export interface TestCase<
 
 export interface IAvailableModels {
   getModel(stage: StageBase): IModel;
+  models(): IterableIterator<IModel>;
 }
 
 export interface IModel {

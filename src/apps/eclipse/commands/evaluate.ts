@@ -2,16 +2,21 @@ import {Command} from 'commander';
 import {DateTime} from 'luxon';
 import os from 'os';
 
-import {Configuration, ILogger, wrapper} from '../../../lib/shared/index.js';
-import {evaluateTestCases} from '../../../lib/core/index.js';
+import {
+  Configuration,
+  evaluateTestCases,
+  wrapper,
+} from '../../../lib/core/index.js';
+import {ILogger} from '../../../lib/shared/index.js';
 
-import {makeModels, makeStages} from '../../../lib/pipelines/example.js';
+import {makeStages} from '../../../lib/pipelines/example.js';
 
 export interface EvaluateOptions {
   concurrancy?: number;
   dryrun?: boolean;
   env?: string;
   filter?: string;
+  models?: string;
 }
 
 export async function evaluate(this: Command, options: EvaluateOptions) {
@@ -28,7 +33,7 @@ export async function evaluateInternal(
 ) {
   console.log('Evaluate command not implemented.');
 
-  const models = makeModels();
+  // const models = configuration.models;
   const stages = makeStages();
 
   const user = os.userInfo().username;
@@ -41,5 +46,5 @@ export async function evaluateInternal(
   const info = {user, cwd, date};
   console.log(JSON.stringify(info, null, 2));
 
-  await evaluateTestCases(configuration, models, stages);
+  await evaluateTestCases(configuration, stages);
 }

@@ -6,12 +6,12 @@ import pLimit from 'p-limit';
 import z from 'zod';
 import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
 
-import {Application, IAvailableModels, Stage, TestCase} from '../core/index.js';
-import {Configuration, filesFromFolder} from '../shared/index.js';
+import {Application, Configuration, Stage, TestCase} from '../core/index.js';
+import {filesFromFolder} from '../shared/index.js';
 
 export async function evaluateTestCases<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
->(configuration: Configuration, models: IAvailableModels, stages: T) {
+>(configuration: Configuration, stages: T) {
   const limit = pLimit(configuration.concurrancy);
 
   const validator = z.object({
@@ -90,7 +90,7 @@ export async function evaluateTestCases<
   // Evaluate test cases.
   const logs = await Promise.all(
     filteredTestCases.map(testCase =>
-      limit(() => application.eval(models, testCase))
+      limit(() => application.eval(configuration.models, testCase))
     )
   );
 

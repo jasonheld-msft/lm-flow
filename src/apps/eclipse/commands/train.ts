@@ -1,6 +1,7 @@
 import {Command} from 'commander';
 
-import {Configuration, ILogger, wrapper} from '../../../lib/shared/index.js';
+import {Configuration, wrapper} from '../../../lib/core/index.js';
+import {ILogger} from '../../../lib/shared/index.js';
 
 export interface TrainOptions {
   dryrun?: boolean;

@@ -2,7 +2,7 @@ import dedent from 'dedent';
 import Handlebars from 'handlebars';
 import z from 'zod';
 
-import {Application, AvailableModels, MockModel, Stage} from '../core/index.js';
+import {Stage} from '../core/index.js';
 
 class HandlebarsStage<T> {
   template: HandlebarsTemplateDelegate;
@@ -33,11 +33,11 @@ class Stage1
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  backProject(output: number): string {
+  makeTrainingCase(output: number): string {
     throw new Error('Method not implemented.');
   }
 
-  project(completion: string): number {
+  parseCompletion(completion: string): number {
     return Number(completion);
   }
 
@@ -74,11 +74,11 @@ class Stage2
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  backProject(output: string): string {
+  makeTrainingCase(output: string): string {
     throw new Error('Method not implemented.');
   }
 
-  project(completion: string): string {
+  parseCompletion(completion: string): string {
     return completion;
   }
 
@@ -102,60 +102,3 @@ export function makeStages() {
   ] as const;
   return stages;
 }
-
-export function makeModels() {
-  const models = new AvailableModels([
-    new MockModel('stage1model', false, '0', [
-      {prompt: 'hello, world', completion: '2'},
-      {prompt: 'hello', completion: '1'},
-    ]),
-    new MockModel('stage2model', false, "I don't understand", [
-      {prompt: '0', completion: 'goodbye'},
-      {prompt: '1', completion: 'hello'},
-      {prompt: '2', completion: 'hello hello'},
-    ]),
-  ]);
-  return models;
-}
-
-async function go() {
-  const models = new AvailableModels([
-    new MockModel('stage1model', false, '0', [
-      {prompt: 'hello, world', completion: '2'},
-      {prompt: 'hello', completion: '1'},
-    ]),
-    new MockModel('stage2model', false, "I don't understand", [
-      {prompt: '0', completion: 'goodbye'},
-      {prompt: '1', completion: 'hello'},
-      {prompt: '2', completion: 'hello hello'},
-    ]),
-  ]);
-
-  const stages = [
-    new Stage1('stage1', 'stage1model'),
-    new Stage2('stage2', 'stage2model'),
-  ] as const;
-
-  const application = new Application(stages);
-  const testCases = [
-    {
-      sha: 'abc',
-      path: 'a/b/c',
-      input: 'hello, world',
-      expected: [2, 'hello hello'] as const,
-    },
-    {
-      sha: 'def',
-      path: 'd/e/f',
-      input: 'hi there',
-      expected: [2, 'hello hello'] as const,
-    },
-  ];
-
-  for (const testCase of testCases) {
-    const logs = await application.eval(models, testCase);
-    console.log(JSON.stringify(logs, null, 2));
-  }
-}
-
-// go();

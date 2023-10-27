@@ -46,7 +46,7 @@ async function evalRecursion2<
   const prompt = stage.makePrompt(input);
   const model = models.getModel(stage);
   const completion = await model.complete(prompt);
-  const result = stage.project(completion);
+  const result = stage.parseCompletion(completion);
   const judgment = stage.judge(result, expect);
   const log: StageLogType<typeof stage> = {
     timestamp: DateTime.now(),

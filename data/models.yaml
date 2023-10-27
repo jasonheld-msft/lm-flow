@@ -1,0 +1,24 @@
+# - type: function
+#   name: f1
+- type: mock
+  name: stage1model
+  config:
+    exactMatch: false
+    defaultResponse: "I don't understand"
+    cache:
+      - prompt: hello, world
+        completion: '2'
+      - prompt: hello
+        completion: '1'
+- type: mock
+  name: stage2model
+  config:
+    exactMatch: false
+    defaultResponse: "I don't understand"
+    cache:
+      - prompt: '0'
+        completion: 'goodbye'
+      - prompt: '1'
+        completion: 'hello'
+      - prompt: '2'
+        completion: 'hello hello'
