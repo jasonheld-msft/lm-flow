@@ -6,6 +6,7 @@ import {evaluateTestCases} from '../../../lib/core';
 import {makeStages} from '../../../lib/pipelines/example';
 
 export interface EvaluateOptions {
+  concurrancy?: number;
   dryrun?: boolean;
   env?: string;
   filter?: string;

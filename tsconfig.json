@@ -2,8 +2,10 @@
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
     "esModuleInterop": true,
+    // "module": "node16",
+		// "moduleResolution": "node16",
+    "outDir": "build",
     "rootDir": ".",
-    "outDir": "build"
   },
   "include": [
     "src/**/*.ts",

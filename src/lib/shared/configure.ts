@@ -8,6 +8,7 @@ import {ILogger, Logger} from './logger';
 import {SuitePredicate, suitePredicate} from './suite-predicate';
 
 export interface Options {
+  concurrancy?: string;
   env?: string;
   filter?: string;
   input?: string;
@@ -16,6 +17,7 @@ export interface Options {
 }
 
 export interface Configuration {
+  concurrancy: number;
   env?: string;
   filter: SuitePredicate;
   inputFolder: string;
@@ -106,14 +108,19 @@ function validateConfiguration(
   const openAIKey = options.key || process.env.OPENAI_KEY;
 
   const filter = options.filter ? suitePredicate(options.filter) : () => true;
+  const concurrancy = options.concurrancy
+    ? Number(options.concurrancy)
+    : Infinity;
 
   logger.info('Configuration:', 1);
   logger.info(`  INPUT_FOLDER: ${inputFolder}`, 1);
   logger.info(`  OUTPUT_FOLDER: ${outputFolder}`, 1);
   logger.info(`  FILTER: ${options.filter || '(no filter)'}`, 1);
-  // Do not log openAIKey
+  logger.info(`  CONCURRANCY: ${concurrancy}`, 1);
+  // WARNING: For security, do not log openAIKey
 
   return {
+    concurrancy,
     filter,
     inputFolder,
     openAIKey,

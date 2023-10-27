@@ -1,6 +1,7 @@
+import yaml from 'js-yaml';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import yaml from 'js-yaml';
+// import pLimit from 'p-limit';
 import z from 'zod';
 import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
 
@@ -49,6 +50,9 @@ export async function evaluateTestCases<
   for (const testCase of filteredTestCases) {
     console.log(JSON.stringify(testCase, null, 2));
   }
+
   // For each case, evaluate and add results to list.
+  // const limit = pLimit(1);
+
   // Serialize list to disk.
 }

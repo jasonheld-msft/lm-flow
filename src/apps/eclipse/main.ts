@@ -9,6 +9,11 @@ import {
 } from '../../lib/shared/constants';
 
 async function main() {
+  const concurrancyOption = [
+    '-c, --concurrancy <limit>',
+    'maximum number of concurrant test case evaluations (default: Infinity)',
+  ] as const;
+
   const dryrunOption = [
     '-d, --dryrun',
     "dry run - don't write to filesystem",
@@ -30,15 +35,15 @@ async function main() {
     `path to folder containing test cases (default: "${defaultInputFolder}")`,
   ] as const;
 
+  const openAIKey = [
+    '-k, --key <OpenAIKey>',
+    'Use OpenAI with supplied key")',
+  ] as const;
+
   const modelsOption = [
     '-m, --models',
     'comma separated list of models',
     // TODO: default value
-  ] as const;
-
-  const openAIKey = [
-    '-k, --key <OpenAIKey>',
-    'Use OpenAI with supplied key")',
   ] as const;
 
   const outputOption = [
@@ -53,6 +58,7 @@ async function main() {
   program
     .command('eval')
     .description('Evalutate a multi-model system')
+    .option(...concurrancyOption)
     .option(...dryrunOption)
     .option(...envOption)
     .option(...filterOption)
@@ -65,6 +71,7 @@ async function main() {
   program
     .command('train')
     .description('Train a multi-model system')
+    .option(...concurrancyOption)
     .option(...dryrunOption)
     .option(...envOption)
     .option(...filterOption)
