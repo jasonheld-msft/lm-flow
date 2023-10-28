@@ -2,6 +2,7 @@ import {Command} from 'commander';
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import os from 'os';
+import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
 import {defaultInputFolder, defaultOutputFolder} from '../shared/constants.js';
@@ -36,7 +37,6 @@ export interface Configuration {
   openAIKey?: string;
   outputFolder: string;
   test_run_id: string;
-  // timestamp: DateTime;
   timestamp: Date;
   user: string;
 }
@@ -163,4 +163,17 @@ function validateConfiguration(
     timestamp,
     user,
   };
+}
+
+export function makeRunlogFilename({
+  logFile,
+  outputFolder,
+  test_run_id,
+}: Configuration) {
+  const filename = logFile || test_run_id + '.yaml';
+
+  // WARNING: do not use path.posix() here. Required for resolve to work correctly
+  // on Windows with absolute paths.
+  const filepath = path.resolve(outputFolder, filename);
+  return filepath;
 }

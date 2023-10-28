@@ -77,20 +77,6 @@ export class AvailableModels implements IAvailableModels {
     this.nameToModel.set(name, model);
   }
 
-  overrideStageModel(stageName: string, modelName: string) {
-    if (this.stageModelOverrides.has(stageName)) {
-      throw new Error(
-        `Attempting to add duplicate stage model override for ${stageName}`
-      );
-    }
-    if (!this.nameToModel.has(modelName)) {
-      throw new Error(
-        `Unknown model "${modelName}" when configuring override for "${stageName}".`
-      );
-    }
-    this.stageModelOverrides.set(stageName, modelName);
-  }
-
   getModel(stage: StageBase): IModel {
     const modelName =
       this.stageModelOverrides.get(stage.name) || stage.defaultModel;
@@ -105,6 +91,20 @@ export class AvailableModels implements IAvailableModels {
 
   models(): IterableIterator<IModel> {
     return this.nameToModel.values();
+  }
+
+  private overrideStageModel(stageName: string, modelName: string) {
+    if (this.stageModelOverrides.has(stageName)) {
+      throw new Error(
+        `Attempting to add duplicate stage model override for ${stageName}`
+      );
+    }
+    if (!this.nameToModel.has(modelName)) {
+      throw new Error(
+        `Unknown model "${modelName}" when configuring override for "${stageName}".`
+      );
+    }
+    this.stageModelOverrides.set(stageName, modelName);
   }
 }
 

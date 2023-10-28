@@ -1,17 +1,19 @@
 * Top
-  * console.log() => logger.log()
-  * Rework wrapper now that Configuration contains logger
-  * Factoring for use as a package
-    * Also special folder that is gitignored
-  * Command check for duplicate flags?
+  * iterator symbol for AvailableModels
+  * Eliminate concept of stage model override - put in config file?
+  * Separate folders for
+    * config
+    * runs
+    * training
+    * tests
+  * Train command
   * Add context to TestCases
-  * Add command line, configuration, user, cwd to log, run file name/id
-  * x Write logs
-    * Need ability to write failed log.
-    * Need some way to parse logs without pipeline
-    * x Naming - run folder - Date followed by GUID?
-  * Stage definition file
   * . Model definition should not reside in data/cases.
+  * Factoring for use as a package
+    * Stage definition file?
+    * Also special folder that is .gitignored
+    * Remove pipelines folder
+  * OpenAI integration
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
   * Constants for environment variable and file names
@@ -21,11 +23,21 @@
     * Handling dates
     * Do we still need luxon?
   * Pipeline vs graph
-  * OpenAI integration
+    * Force type error if ZodTypes are wrong in Stage.types.
   * Move .env configuration out of configure() - separate from logger.
   * Reorganize types.ts
+  * Configure mocha and test runner
+
+
   * Accept yaml or json inputs
-  * Force type error if ZodTypes are wrong in Stage.types.
+  * Command check for duplicate flags?
+  * console.log() => logger.log()
+  * Rework wrapper now that Configuration contains logger
+  * x Add command line, configuration, user, cwd to log, run file name/id
+  * x Write logs
+    * Need ability to write failed log.
+    * Need some way to parse logs without pipeline
+    * x Naming - run folder - Date followed by GUID?
   * Test runner
     * Move makeStages() to configuration.
     * x Move makeModels() to configuration.
