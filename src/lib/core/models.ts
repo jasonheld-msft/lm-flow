@@ -3,86 +3,61 @@ import yaml from 'js-yaml';
 import z from 'zod';
 import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
 
-import {IAvailableModels, IModel, StageBase} from './types.js';
+import {StageBase} from './types.js';
 
-const ModelDefinition = z.discriminatedUnion('type', [
-  z.object({
-    type: z.literal('function'),
-    name: z.string(),
+export interface IAvailableModels {
+  getModel(stage: StageBase): IModel;
+  models(): IterableIterator<IModel>;
+}
+
+export interface IModel {
+  name(): string;
+  complete(prompt: string): Promise<string>;
+  train(): Promise<void>;
+  spec(): ModelDefinition;
+}
+
+export const FunctionModelDefinition = z.object({
+  type: z.literal('function'),
+  name: z.string(),
+});
+type FunctionModelDefinition = z.infer<typeof FunctionModelDefinition>;
+
+export const MockModelDefinition = z.object({
+  type: z.literal('mock'),
+  name: z.string(),
+  config: z.object({
+    exactMatch: z.boolean(),
+    defaultResponse: z.string(),
+    cache: z.array(
+      z.object({
+        prompt: z.string(),
+        completion: z.string(),
+      })
+    ),
   }),
-  z.object({
-    type: z.literal('mock'),
-    name: z.string(),
-    config: z.object({
-      exactMatch: z.boolean(),
-      defaultResponse: z.string(),
-      cache: z.array(
-        z.object({
-          prompt: z.string(),
-          completion: z.string(),
-        })
-      ),
-    }),
+});
+type MockModelDefinition = z.infer<typeof MockModelDefinition>;
+
+const OpenAIModelDefinition = z.object({
+  type: z.literal('openai'),
+  name: z.string(),
+  config: z.object({
+    model: z.string(),
+    max_tokens: z.number(),
   }),
-  z.object({
-    type: z.literal('openai'),
-    name: z.string(),
-    config: z.object({
-      model: z.string(),
-      max_tokens: z.number(),
-    }),
-  }),
+});
+type OpenAIModelDefinition = z.infer<typeof OpenAIModelDefinition>;
+
+export const ModelDefinition = z.discriminatedUnion('type', [
+  FunctionModelDefinition,
+  MockModelDefinition,
+  OpenAIModelDefinition,
 ]);
-
 type ModelDefinition = z.infer<typeof ModelDefinition>;
 
-const ModelDefinitionList = z.array(ModelDefinition);
-type ModelDefinitionList = z.infer<typeof ModelDefinitionList>;
-
-export function loadModels(filename: string): IAvailableModels {
-  const text = fs.readFileSync(filename, 'utf-8');
-  const obj = yaml.load(text);
-  const result = ModelDefinitionList.safeParse(obj);
-  if (!result.success) {
-    const zodError = generateErrorMessage(result.error.issues);
-    const errorMessage = `In ${filename}: ${zodError}`;
-    throw new Error(errorMessage);
-  }
-
-  const models = result.data.map(createModel);
-  return new AvailableModels(models);
-}
-
-const functionModels: {[key: string]: IModel} = {};
-
-function createModel(definition: ModelDefinition): IModel {
-  switch (definition.type) {
-    case 'function':
-      if (definition.name in functionModels) {
-        return functionModels[definition.name];
-      } else {
-        throw new Error(
-          `Model definition file references unknown function model ${definition.name}.`
-        );
-      }
-    case 'mock':
-      return new MockModel(
-        definition.name,
-        definition.config.exactMatch,
-        definition.config.defaultResponse,
-        definition.config.cache
-      );
-    case 'openai':
-      throw new Error('OpenAI model not implemented');
-    default:
-      throw new Error(
-        `Model definition file references unknown model type ${
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (definition as any).type
-        }.`
-      );
-  }
-}
+export const ModelDefinitionList = z.array(ModelDefinition);
+export type ModelDefinitionList = z.infer<typeof ModelDefinitionList>;
 
 export class AvailableModels implements IAvailableModels {
   private nameToModel = new Map<string, IModel>();
@@ -133,9 +108,9 @@ export class AvailableModels implements IAvailableModels {
   }
 }
 
-export class EchoModel implements IModel {
+export class HelloModel implements IModel {
   name(): string {
-    return 'echo';
+    return 'hello';
   }
 
   async complete(prompt: string): Promise<string> {
@@ -145,76 +120,41 @@ export class EchoModel implements IModel {
   async train(): Promise<void> {
     throw new Error('Method not implemented.');
   }
-}
 
-export class LengthModel implements IModel {
-  name(): string {
-    return 'length';
-  }
-
-  async complete(prompt: string): Promise<string> {
-    return `The prompt length is ${prompt.length}`;
-  }
-
-  async train(): Promise<void> {
-    throw new Error('Method not implemented.');
+  spec(): ModelDefinition {
+    return {type: 'function', name: 'hello'};
   }
 }
 
-export class ReverseModel implements IModel {
-  name(): string {
-    return 'reverse';
-  }
-
-  async complete(prompt: string): Promise<string> {
-    return prompt.split('').reverse().join('');
-  }
-
-  async train(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-}
-
-interface CachedCompletion {
-  prompt: string;
-  completion: string;
-}
+const functionModels: {[key: string]: IModel} = {
+  hello: new HelloModel(),
+};
 
 export class MockModel implements IModel {
-  private _name;
+  private _spec: MockModelDefinition;
   private responses: Map<string, string>;
-  private defaultResponse: string;
-  private exactMatch: boolean;
 
-  constructor(
-    name: string,
-    exactMatch: boolean,
-    defaultResponse: string,
-    responses: CachedCompletion[]
-  ) {
-    this._name = name;
+  constructor(spec: MockModelDefinition) {
+    this._spec = spec;
 
     this.responses = new Map<string, string>(
-      responses.map(({prompt, completion}) => {
-        if (exactMatch) {
+      spec.config.cache.map(({prompt, completion}) => {
+        if (spec.config.exactMatch) {
           return [prompt, completion];
         } else {
           return [prompt.toLowerCase(), completion.toLowerCase()];
         }
       })
     );
-
-    this.defaultResponse = defaultResponse;
-    this.exactMatch = exactMatch;
   }
 
   name(): string {
-    return this._name;
+    return this._spec.name;
   }
 
   async complete(prompt: string): Promise<string> {
-    if (this.exactMatch) {
-      return this.responses.get(prompt) || this.defaultResponse;
+    if (this._spec.config.exactMatch) {
+      return this.responses.get(prompt) || this._spec.config.defaultResponse;
     } else {
       const prompt2 = prompt.toLowerCase();
       for (const [substring, completion] of this.responses.entries()) {
@@ -223,10 +163,52 @@ export class MockModel implements IModel {
         }
       }
     }
-    return this.defaultResponse;
+    return this._spec.config.defaultResponse;
   }
 
   async train(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  spec() {
+    return this._spec;
+  }
+}
+
+export function loadModels(filename: string): IAvailableModels {
+  const text = fs.readFileSync(filename, 'utf-8');
+  const obj = yaml.load(text);
+  const result = ModelDefinitionList.safeParse(obj);
+  if (!result.success) {
+    const zodError = generateErrorMessage(result.error.issues);
+    const errorMessage = `In ${filename}: ${zodError}`;
+    throw new Error(errorMessage);
+  }
+
+  const models = result.data.map(createModel);
+  return new AvailableModels(models);
+}
+
+function createModel(definition: ModelDefinition): IModel {
+  switch (definition.type) {
+    case 'function':
+      if (definition.name in functionModels) {
+        return functionModels[definition.name];
+      } else {
+        throw new Error(
+          `Model definition file references unknown function model ${definition.name}.`
+        );
+      }
+    case 'mock':
+      return new MockModel(definition);
+    case 'openai':
+      throw new Error('OpenAI model not implemented');
+    default:
+      throw new Error(
+        `Model definition file references unknown model type ${
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (definition as any).type
+        }.`
+      );
   }
 }

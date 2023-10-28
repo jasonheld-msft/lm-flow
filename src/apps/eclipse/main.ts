@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {program} from 'commander';
 
-import {evaluate, format, train} from './commands/index.js';
+import {clean, evaluate, format, train} from './commands/index.js';
 
 import {
   defaultInputFolder,
@@ -40,6 +40,11 @@ async function main() {
     'Use OpenAI with supplied key")',
   ] as const;
 
+  const logFileOption = [
+    '-l, --logFile <name>',
+    'name for run log file (defaults to generated uuid)',
+  ] as const;
+
   const modelsOption = [
     '-m, --models',
     'path to model desciption file (default from environment)',
@@ -62,6 +67,7 @@ async function main() {
     .option(...envOption)
     .option(...filterOption)
     .option(...inputOption)
+    .option(...logFileOption)
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
@@ -86,6 +92,14 @@ async function main() {
     .option(...envOption)
     .option(...outputOption)
     .action(format);
+
+  program
+    .command('clean')
+    .description('remove all files from output folder')
+    .option(...envOption)
+    .option(...outputOption)
+    .option('-x, --force', 'do not prompt before removing files')
+    .action(clean);
 
   await program.parseAsync();
 }

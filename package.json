@@ -2,7 +2,7 @@
   "name": "eclipse",
   "version": "0.0.0",
   "description": "LLM training and evaluation tool",
-  "type":"module",
+  "type": "module",
   "exports": "./build/src/index.js",
   "types": "build/src/index.d.ts",
   "files": [
@@ -28,6 +28,8 @@
     "@types/js-yaml": "^4.0.8",
     "@types/luxon": "^3.3.3",
     "@types/node": "^14.11.2",
+    "@types/prompt-sync": "^4.2.2",
+    "@types/uuid": "^9.0.6",
     "gts": "^3.1.1",
     "typescript": "~4.7.0"
   },
@@ -40,6 +42,9 @@
     "js-yaml": "^4.1.0",
     "luxon": "^3.4.3",
     "p-limit": "^4.0.0",
+    "prompt-sync": "^4.2.0",
+    "rimraf": "^5.0.5",
+    "uuid": "^9.0.1",
     "zod": "^3.22.4",
     "zod-error": "^1.5.0"
   }

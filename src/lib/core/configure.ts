@@ -1,32 +1,44 @@
 import {Command} from 'commander';
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
-import {DateTime} from 'luxon';
-
-import {IAvailableModels, loadModels} from './index.js';
+import os from 'os';
+import {v4 as uuidv4} from 'uuid';
 
 import {defaultInputFolder, defaultOutputFolder} from '../shared/constants.js';
 import {ILogger, Logger} from '../shared/logger.js';
 import {SuitePredicate, suitePredicate} from '../shared/suite-predicate.js';
 
+import {IAvailableModels, loadModels} from './models.js';
+
 export interface Options {
   concurrancy?: string;
+  dryrun?: boolean;
   env?: string;
   filter?: string;
   input?: string;
   key?: string;
+  logFile?: string;
   models?: string;
   output?: string;
 }
 
 export interface Configuration {
+  cmd: string;
   concurrancy: number;
+  cwd: string;
+  dryrun: boolean;
   env?: string;
   filter: SuitePredicate;
   inputFolder: string;
+  logger: ILogger;
+  logFile?: string;
   models: IAvailableModels;
   openAIKey?: string;
   outputFolder: string;
+  test_run_id: string;
+  // timestamp: DateTime;
+  timestamp: Date;
+  user: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -67,9 +79,7 @@ export async function wrapper<T extends {[key: string]: any}>(
 function configure(command: Command, {env}: Options): ILogger {
   const logger = new Logger();
   try {
-    const date = DateTime.now().toLocaleString(
-      DateTime.DATETIME_FULL_WITH_SECONDS
-    );
+    const date = new Date();
     logger.info(
       `${command.parent!.name()} tool run "${command.name()}" command on ${date}.`
     );
@@ -104,10 +114,19 @@ function validateConfiguration(
   logger: ILogger,
   options: Options
 ): Configuration {
+  const cmd = process.argv.join(' ');
+  const cwd = process.cwd();
+  const dryrun = !!options.dryrun;
+  const test_run_id = uuidv4();
+  const timestamp = new Date();
+  const user = os.userInfo().username;
+
   const inputFolder =
     options.input || process.env.INPUT_FOLDER || defaultInputFolder;
   const outputFolder =
     options.output || process.env.OUTPUT_FOLDER || defaultOutputFolder;
+
+  const logFile = options.logFile;
 
   const modelsFile =
     options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
@@ -129,11 +148,19 @@ function validateConfiguration(
   // WARNING: For security, do not log openAIKey
 
   return {
+    cmd,
     concurrancy,
+    cwd,
+    dryrun,
     filter,
     inputFolder,
+    logFile,
+    logger,
     models,
     openAIKey,
     outputFolder,
+    test_run_id,
+    timestamp,
+    user,
   };
 }

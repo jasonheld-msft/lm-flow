@@ -1,3 +1,4 @@
+import fs from 'fs-extra';
 import yaml from 'js-yaml';
 import {createHash} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
@@ -12,10 +13,11 @@ import {filesFromFolder} from '../shared/index.js';
 export async function evaluateTestCases<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
 >(configuration: Configuration, stages: T) {
+  const logger = configuration.logger;
   const limit = pLimit(configuration.concurrancy);
 
   const validator = z.object({
-    path: z.string(),
+    test_case_id: z.string(),
     sha: z.string(),
     tags: z.array(z.string()).optional(),
     input: stages[0].types().input,
@@ -35,13 +37,12 @@ export async function evaluateTestCases<
     const obj = yaml.load(buffer.toString('utf-8'));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (obj as any).sha = sha;
-    const relativeFileName = path.posix.relative(
-      configuration.inputFolder,
-      files[i]
-    );
-    const parts = path.posix.parse(relativeFileName);
+    const relativeFileName = path.relative(configuration.inputFolder, files[i]);
+    const parts = path.parse(relativeFileName);
+    // DESIGN NOTE: use path.posix for text_case_id
+    // to get consistent naming across operating systems.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (obj as any).path = path.posix.join(parts.dir, parts.name);
+    (obj as any).test_case_id = path.posix.join(parts.dir, parts.name);
     const result = validator.safeParse(obj);
     if (result.success) {
       // WARNING: this type assertion is dangerous.
@@ -70,23 +71,8 @@ export async function evaluateTestCases<
     configuration.filter(c.tags || [])
   );
 
-  // // TEMPORARY: Print out test cases.
-  // for (const testCase of filteredTestCases) {
-  //   console.log(JSON.stringify(testCase, null, 2));
-  // }
-
   const application = new Application(stages);
 
-  // // Evaluate test cases.
-  // const logs = await Promise.all(
-  //   filteredTestCases.map(testCase =>
-  //     limit(() => {
-  //       const {sha} = testCase;
-  //       const stageLogs = application.eval(models, testCase);
-  //       return {sha, stageLogs};
-  //     })
-  //   )
-  // );
   // Evaluate test cases.
   const logs = await Promise.all(
     filteredTestCases.map(testCase =>
@@ -94,15 +80,36 @@ export async function evaluateTestCases<
     )
   );
 
-  const results = logs.map((log, i) => {
-    const {path, sha} = filteredTestCases[i];
-    return {path, sha, log};
+  const cases = logs.map((log, i) => {
+    const {test_case_id, sha} = filteredTestCases[i];
+    return {test_case_id, sha, log};
   });
 
-  // TEMPORARY: Print out test cases.
-  for (const result of results) {
-    console.log(JSON.stringify(result, null, 2));
-  }
+  const {cmd, cwd, test_run_id, user} = configuration;
+  const timestamp = configuration.timestamp;
+  const models = [...configuration.models.models()].map(m => m.spec());
+  const runLog = {test_run_id, cmd, cwd, timestamp, user, models, cases};
 
-  // Serialize list to disk.
+  // Serialize run log to disk.
+  const text = yaml.dump(runLog);
+  // console.log(text);
+
+  const outfile = makeFilename(configuration);
+  if (configuration.dryrun) {
+    logger.info(`Ready to save run log to "${outfile}".`, 1);
+  } else {
+    logger.info(`Saving run log to "${outfile}".`, 1);
+    await fs.ensureFile(outfile);
+    fs.writeFile(outfile, text, {encoding: 'utf8'});
+  }
+  logger.info('finished', 1);
+}
+
+function makeFilename({logFile, outputFolder, test_run_id}: Configuration) {
+  const filename = logFile || test_run_id + '.yaml';
+
+  // WARNING: do not use path.posix() here. Required for resolve to work correctly
+  // on Windows with absolute paths.
+  const filepath = path.resolve(outputFolder, filename);
+  return filepath;
 }

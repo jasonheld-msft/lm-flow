@@ -1,7 +1,6 @@
-import {DateTime} from 'luxon';
+import {IAvailableModels} from './models.js';
 import {
   Expected,
-  IAvailableModels,
   Input,
   Stage,
   StageLogType,
@@ -49,7 +48,7 @@ async function evalRecursion2<
   const result = stage.parseCompletion(completion);
   const judgment = stage.judge(result, expect);
   const log: StageLogType<typeof stage> = {
-    timestamp: DateTime.now(),
+    timestamp: new Date(),
     stage: stage.name,
     model: model.name(),
     input: input,

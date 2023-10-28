@@ -1,4 +1,3 @@
-import {DateTime} from 'luxon';
 import z from 'zod';
 
 export type Input<T extends ReadonlyArray<Stage<unknown, unknown, unknown>>> =
@@ -44,7 +43,7 @@ export interface Stage<INPUT, OUTPUT, JUDGMENT> extends StageBase {
 }
 
 export interface StageLog<INPUT, OUTPUT, JUDGMENT> {
-  timestamp: DateTime;
+  timestamp: Date;
   stage: string;
   model: string;
   input: INPUT;
@@ -58,20 +57,9 @@ export interface StageLog<INPUT, OUTPUT, JUDGMENT> {
 export interface TestCase<
   T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
 > {
+  test_case_id: string;
   tags?: string[];
   sha: string;
-  path: string;
   input: Input<T>;
   expected: Expected<T>;
-}
-
-export interface IAvailableModels {
-  getModel(stage: StageBase): IModel;
-  models(): IterableIterator<IModel>;
-}
-
-export interface IModel {
-  name(): string;
-  complete(prompt: string): Promise<string>;
-  train(): Promise<void>;
 }

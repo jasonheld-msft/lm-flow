@@ -36,15 +36,5 @@ export async function evaluateInternal(
   // const models = configuration.models;
   const stages = makeStages();
 
-  const user = os.userInfo().username;
-  const cwd = process.cwd();
-  const date = DateTime.now().toLocaleString(DateTime.DATETIME_FULL);
-  // command line
-  // configuration
-  // eclipse version
-  // models description
-  const info = {user, cwd, date};
-  console.log(JSON.stringify(info, null, 2));
-
   await evaluateTestCases(configuration, stages);
 }

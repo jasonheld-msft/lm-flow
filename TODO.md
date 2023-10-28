@@ -1,38 +1,47 @@
 * Top
-  * x Rename stage functions
-    * x makePrompt
-    * x parseCompletion
-    * x makeTrainingCase
-  * Stage definition file
-  * . Model definition should not reside in data/cases.
-  * Reorganize types.ts
-  * x Move configure.ts into core
-  * Models definition file and command-line argument
-  * Constants for environment variable names
+  * console.log() => logger.log()
+  * Rework wrapper now that Configuration contains logger
+  * Factoring for use as a package
+    * Also special folder that is gitignored
+  * Command check for duplicate flags?
   * Add context to TestCases
   * Add command line, configuration, user, cwd to log, run file name/id
-  * Accept yaml or json inputs
+  * x Write logs
+    * Need ability to write failed log.
+    * Need some way to parse logs without pipeline
+    * x Naming - run folder - Date followed by GUID?
+  * Stage definition file
+  * . Model definition should not reside in data/cases.
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
+  * Constants for environment variable and file names
+  * . Models definition file and command-line argument
+    * Need to decide default configuration location (models and stages)
+  * Test result formatter
+    * Handling dates
+    * Do we still need luxon?
+  * Pipeline vs graph
+  * OpenAI integration
+  * Move .env configuration out of configure() - separate from logger.
+  * Reorganize types.ts
+  * Accept yaml or json inputs
   * Force type error if ZodTypes are wrong in Stage.types.
   * Test runner
-    * Move makeModels() and makeStages() to configuration.
-    * Write logs
-      * Need ability to write failed log.
-      * Need some way to parse logs without pipeline
-      * Naming - run folder - Date followed by GUID?
-    * Clean command
+    * Move makeStages() to configuration.
+    * x Move makeModels() to configuration.
+    * x Clean command
     * Batch running
       * x Concurrancy in test cases
       * Concurrancy in LLM calls?
-  * Test result formatter
-  * Pipeline vs graph
-  * OpenAI integration
   * Clean up variable, function, class, type naming
   * . Add logging to inference and eval
   * Separate inference from eval
   * Handle exceptions in eval
-  * Move .env configuration out of configure() - separate from logger.
+  * x Move configure.ts into core
+  * x Rename stage functions
+    * x makePrompt
+    * x parseCompletion
+    * x makeTrainingCase
   * x Add hash to test cases
   * x Test case loader/validator
   * x Zod

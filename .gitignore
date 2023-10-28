@@ -37,3 +37,6 @@ yarn-error.log*
 
 # Shell history - produced by this project's Shell class
 *.history
+
+# Sample tool output
+data/runs
