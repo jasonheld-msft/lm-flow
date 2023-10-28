@@ -84,13 +84,13 @@ async function cleanInternal(
         );
         if (response === 'y' || response === 'Y' || response === 'yes') {
           logger.info(`Erasing "${outputFolder}"`, 1);
-          // rimraf(outputFolder);
+          rimraf(outputFolder);
         } else {
           logger.info(`Keeping "${outputFolder}"`, 1);
         }
       } else {
         logger.info(`Erasing "${outputFolder}"`, 1);
-        // rimraf(outputFolder);
+        rimraf(outputFolder);
       }
     }
   } else {
