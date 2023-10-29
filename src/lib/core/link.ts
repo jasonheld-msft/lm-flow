@@ -35,11 +35,11 @@ type OutputUnion<T> = T extends readonly [
   ? OUTPUT | OutputUnion<Tail>
   : never;
 
-type TupleTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
-  ? HEAD | TupleTypes<TAIL>
-  : never;
+// type TupleTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
+//   ? HEAD | TupleTypes<TAIL>
+//   : never;
 
-type TupleToArray<T> = TupleTypes<T>[];
+// type TupleToArray<T> = TupleTypes<T>[];
 
 type TupleLinkTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
   ? TestCaseLink<HEAD> | TupleLinkTypes<TAIL>
@@ -58,7 +58,7 @@ type Link<INPUT, OUTPUT> =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | MuxLink<INPUT, Link<any, any>[], OUTPUT>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  | SequenceLink<INPUT, any, OUTPUT>;
+  | SequenceLink<any, any, INPUT, any, OUTPUT>;
 
 type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   type: 'model';
@@ -77,21 +77,19 @@ type MuxLink<INPUT, CHILD extends Link<any, any>[], OUTPUT> = {
   children: CHILD;
 };
 
-type SequenceLink<INPUT, MIDDLE, OUTPUT> = {
+type SequenceLink<
+  LEFT extends Link<INPUT, MIDDLE>,
+  RIGHT extends Link<MIDDLE, OUTPUT>,
+  INPUT,
+  MIDDLE,
+  OUTPUT
+> = {
   type: 'sequence';
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  left: Link<INPUT, MIDDLE>;
+  left: LEFT;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  right: Link<MIDDLE, OUTPUT>;
+  right: RIGHT;
 };
-
-// type SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT extends Link<INPUT, MIDDLE>, RIGHT extends Link<MIDDLE, OUTPUT>> = {
-//   type: 'sequence';
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   left: LEFT;
-//   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//   right: RIGHT;
-// };
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -103,7 +101,16 @@ type SequenceLink<INPUT, MIDDLE, OUTPUT> = {
 // };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TestCaseLink<T> = T extends SequenceLink<any, any, any> // T['type'] extends 'sequence'
+type TestCaseLink<T> = T extends SequenceLink<
+  infer LEFT,
+  infer RIGHT,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
+> // T['type'] extends 'sequence'
   ? {
       type: 'sequence';
       // left: TestCaseLink<Link<INPUT, MIDDLE>>;
@@ -111,16 +118,18 @@ type TestCaseLink<T> = T extends SequenceLink<any, any, any> // T['type'] extend
 
       // left: TestCaseLink<T['left']>;
       // right: TestCaseLink<T['right']>;
-      left: T['left'];
-      right: T['right'];
+      // left: T['left'];
+      // right: T['right'];
+      left: TestCaseLink<LEFT>;
+      right: TestCaseLink<RIGHT>;
     }
   : // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends MuxLink<any, any, any> // MuxLink<any, infer CHILD, any>
   ? {
       type: 'mux';
       // children: TupleToArray<{[K in keyof CHILD]: TestCaseLink<CHILD[K]>}>; //MuxChildren<CHILD>;
-      // children2: TupleToLinkArray<CHILD>; //MuxChildren<CHILD>;
-      children: TupleToArray<T['children']>;
+      children2: TupleToLinkArray<T['children']>; //MuxChildren<CHILD>;
+      // children: TupleToArray<T['children']>;
     }
   : T extends ModelLink<infer INPUT, infer OUTPUT, infer JUDGMENT>
   ? {
@@ -183,9 +192,15 @@ async function processMux<INPUT, CHILD extends Link<any, any>[], OUTPUT>(
   return link.output(results);
 }
 
-async function processSequence<INPUT, MIDDLE, OUTPUT>(
+async function processSequence<
+  LEFT extends Link<INPUT, MIDDLE>,
+  RIGHT extends Link<MIDDLE, OUTPUT>,
+  INPUT,
+  MIDDLE,
+  OUTPUT
+>(
   models: IAvailableModels,
-  link: SequenceLink<INPUT, MIDDLE, OUTPUT>,
+  link: SequenceLink<LEFT, RIGHT, INPUT, MIDDLE, OUTPUT>,
   input: INPUT
 ): Promise<OUTPUT> {
   const middle = await process(models, link.left, input);
@@ -197,93 +212,55 @@ async function processSequence<INPUT, MIDDLE, OUTPUT>(
 // Test cases
 //
 ///////////////////////////////////////////////////////////////////////////////
-const child1: ModelLink<boolean, number, undefined> = {
+const model1: ModelLink<boolean, number, boolean> = {
   type: 'model',
-  name: 'child1',
-  model: 'model',
+  name: 'model1',
+  model: 'model1-name',
   input: (x: boolean) => String(x),
   output: (x: string) => x.length,
+  judge: (observed: number, expected: number) => observed === expected,
 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TModel1 = TestCaseLink<typeof model1>;
 
-const child2: ModelLink<string, boolean, undefined> = {
+const model2: ModelLink<number, string, boolean> = {
   type: 'model',
-  name: 'child2',
-  model: 'model',
-  input: (x: string) => x,
-  output: (x: string) => !!x,
+  name: 'model2',
+  model: 'model2-name',
+  input: (x: number) => String(x),
+  output: (x: string) => x,
+  judge: (observed: string, expected: string) => observed === expected,
 };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TModel2 = TestCaseLink<typeof model2>;
 
-export const a: MuxLink<
+export const Sequence1: SequenceLink<
+  typeof model1,
+  typeof model2,
+  boolean,
   number,
-  [
-    ModelLink<boolean, number, undefined>,
-    ModelLink<string, boolean, undefined>
-  ],
   string
 > = {
+  type: 'sequence',
+  left: model1,
+  right: model2,
+};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TSequence1 = TestCaseLink<typeof Sequence1>;
+
+export const mux1: MuxLink<number, [typeof model1, typeof model2], string> = {
   type: 'mux',
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // input: (x: number) => [true, 'hello', false],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: (x: number) => [
-    {input: true, link: child1},
-    {input: 'hello', link: child2},
-    {input: false, link: child1},
+    {input: true, link: model1},
+    {input: 5, link: model2},
+    {input: false, link: model1},
   ],
   output: (x: (number | boolean)[]) => typeof x,
-  children: [
-    {
-      type: 'model',
-      name: 'model1',
-      model: 'model',
-      input: (x: boolean) => String(x),
-      output: (x: string) => x.length,
-    },
-    {
-      type: 'model',
-      name: 'model2',
-      model: 'model',
-      input: (x: string) => x,
-      output: (x: string) => !!x,
-    },
-  ],
+  children: [model1, model2],
 };
-
-export const b: ModelLink<string, number, undefined> = {
-  type: 'model',
-  name: 'model3',
-  model: 'model',
-  input: (x: string) => `Question: ${x}`,
-  output: (x: string) => x.length,
-};
-
-export const e: ModelLink<number, string, undefined> = {
-  type: 'model',
-  name: 'model4',
-  model: 'model',
-  input: (x: number) => `Question: ${x}`,
-  output: (x: string) => x,
-};
-
-export const c: SequenceLink<string, number, string> = {
-  type: 'sequence',
-  left: b,
-  right: a,
-};
-
-export const d: SequenceLink<string, number, string> = {
-  type: 'sequence',
-  left: b,
-  right: e,
-};
-
-type T1 = TestCaseLink<typeof b>;
-type T2 = TestCaseLink<typeof a>;
-type T3 = TestCaseLink<typeof c>;
-type T4 = TestCaseLink<typeof d>;
-
-type T5 = TestCaseLink<Link<string, number>>;
-
-// function F(x: T2) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type TMux1 = TestCaseLink<typeof mux1>;
+// function f(x: TMux1) {
 //   x.children2[0].
 // }
