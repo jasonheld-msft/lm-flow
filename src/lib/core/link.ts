@@ -109,7 +109,7 @@ type TestCaseLink<T> = T extends SequenceLink<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   any,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  any
+  infer OUTPUT
 > // T['type'] extends 'sequence'
   ? {
       type: 'sequence';
@@ -122,14 +122,15 @@ type TestCaseLink<T> = T extends SequenceLink<
       // right: T['right'];
       left: TestCaseLink<LEFT>;
       right: TestCaseLink<RIGHT>;
+      output: OUTPUT;
     }
   : // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  T extends MuxLink<any, any, any> // MuxLink<any, infer CHILD, any>
+  T extends MuxLink<any, any, infer OUTPUT> // MuxLink<any, infer CHILD, any>
   ? {
       type: 'mux';
-      // children: TupleToArray<{[K in keyof CHILD]: TestCaseLink<CHILD[K]>}>; //MuxChildren<CHILD>;
-      children2: TupleToLinkArray<T['children']>; //MuxChildren<CHILD>;
-      // children: TupleToArray<T['children']>;
+      // TODO: children must be array of TestLink
+      children: TupleToLinkArray<T['children']>; //MuxChildren<CHILD>;
+      output: OUTPUT;
     }
   : T extends ModelLink<infer INPUT, infer OUTPUT, infer JUDGMENT>
   ? {
@@ -144,23 +145,34 @@ type TestCaseLink<T> = T extends SequenceLink<
     }
   : never;
 
+type Links<INPUT> =
+  | ModelLink<INPUT, any, any>
+  | MuxLink<INPUT, any, any>
+  | SequenceLink<any, any, INPUT, any, any>;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // Processor
 //
 ///////////////////////////////////////////////////////////////////////////////
-export async function process<INPUT, OUTPUT>(
-  models: IAvailableModels,
-  link: Link<INPUT, OUTPUT>,
-  input: INPUT
-): Promise<OUTPUT> {
-  switch (link.type) {
-    case 'model':
-      return processModel(models, link, input);
-    case 'mux':
-      return processMux(models, link, input);
-    case 'sequence':
-      return processSequence(models, link, input);
+export async function process<
+  LINK extends Links<INPUT>,
+  // LINK extends
+  //   | ModelLink<INPUT, any, any>
+  //   | MuxLink<INPUT, any, any>
+  //   | SequenceLink<any, any, INPUT, any, any>,
+  INPUT
+>(models: IAvailableModels, link: LINK, input: INPUT) {
+  //: Promise<TestCaseLink<LINK>>
+  const type = link.type;
+  if (type === 'model') {
+    return processModel(models, link, input);
+  } else if (type === 'mux') {
+    return processMux(models, link, input);
+  } else if (type === 'sequence') {
+    return processSequence(models, link, input);
+  } else {
+    throw new Error(`Unknown link type "${type}"`);
   }
 }
 
@@ -168,28 +180,36 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   models: IAvailableModels,
   link: ModelLink<INPUT, OUTPUT, JUDGMENT>,
   input: INPUT
-): Promise<OUTPUT> {
+): Promise<TestCaseLink<ModelLink<INPUT, OUTPUT, JUDGMENT>>> {
+  const {type, model, name} = link;
   const prompt = link.input(input);
-  const model = models.getModel({name: link.name, defaultModel: link.model});
-  const completion = await model.complete(prompt);
+  const modelAPI = models.getModel({name, defaultModel: model});
+  const completion = await modelAPI.complete(prompt);
   const output = link.output(completion);
   // const judgment = (link.judge && link.expected) ? link.judge(output, link.expected)
-  return output;
+  return {type, model, input, prompt, completion, output};
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function processMux<INPUT, CHILD extends Link<any, any>[], OUTPUT>(
+async function processMux<INPUT, CHILD extends Links<any>[], OUTPUT>(
+  // async function processMux<INPUT, CHILD extends Link<any, any>[], OUTPUT>(
   models: IAvailableModels,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // link: MuxLink<INPUT, OUTPUT, Link<any, any>[]>,
   link: MuxLink<INPUT, CHILD, OUTPUT>,
   input: INPUT
-): Promise<OUTPUT> {
-  // type t = InputUnion2<Link<any, any>[]>;
-  // type t2 = InputUnion2<ReadonlyArray<Link<any, any>>>;
+  //): Promise<OUTPUT> {
+): Promise<TestCaseLink<MuxLink<INPUT, CHILD, OUTPUT>>> {
+  // TODO: Need to
+  //   Change return type to reflect TestLink type
+  //   Rename results to children
+  //   Map over results/children to get results to pass to link.output.
+  //   Return correct TestLink type
   const promises = link.input(input).map(x => process(models, x.link, x.input));
-  const results = (await Promise.all(promises)) as OutputUnion<CHILD>[];
-  return link.output(results);
+  // const results = (await Promise.all(promises)) as OutputUnion<CHILD>[];
+  const children = (await Promise.all(promises)) as TupleToLinkArray<CHILD>;
+  const results = children.map(x => x.output);
+  const output = link.output(results);
+  return {type: link.type, children, output};
 }
 
 async function processSequence<
@@ -261,6 +281,17 @@ export const mux1: MuxLink<number, [typeof model1, typeof model2], string> = {
 };
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type TMux1 = TestCaseLink<typeof mux1>;
+type T2 = TupleToLinkArray<typeof mux1.children>;
 // function f(x: TMux1) {
 //   x.children2[0].
 // }
+
+function zz(models: IAvailableModels) {
+  const z = mux1.input(5);
+  const z0 = z[0];
+  type Z0 = Links<typeof z0>;
+  const z0Link = z0.link;
+  type LINKS = Links<number | boolean>;
+  const q: Links<number | boolean> = z0Link;
+  const z1 = process(models, z0Link, z[0].input);
+}
