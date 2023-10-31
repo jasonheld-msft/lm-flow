@@ -1,6 +1,7 @@
 {
   "extends": "./node_modules/gts/tsconfig-google.json",
   "compilerOptions": {
+    // "noErrorTruncation": true,
     "esModuleInterop": true,
     "module": "node16",
 		"moduleResolution": "node16",

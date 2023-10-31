@@ -1,13 +1,14 @@
 /******************************************************************************
- * This is link6.ts with LEFT and RIGHT parameters added to SequenceLink.
- *
- * This works pretty well. Remaining issues:
- *   1. FIXED: ProcessType<typeof sequence1> is a union type so vs1.left only
- *      has {type, input, output}, when it should be a ProcessType<typeof model1>.
- *      Consequence is that one cannot access fields like vs1.left.prompt.
- *      IDEA: may need to template sequence on LEFT and RIGHT
- *   2. FIXED: In processSequence(), call to process(models, link.left, input) doesn't
- *      match any overloads.
+ * 
+ *  This code seems to work. Because of type assertions, process() seems to
+ *  return the correct type.
+ * 
+ * TODO:
+ *   1. Compare the two versions of process (one is commented out)
+ *   2. Remove the type assertion to any in both versions of process()
+ *   3. Remove the type assertion to any from processMux()
+ *   4. Remove the type assertion to MuxOutputTypes<CHILDREN>[] from processMux()
+ * 
  ******************************************************************************/
 import {IAvailableModels} from './models.js';
 
@@ -43,13 +44,13 @@ export type MuxOutputUnion<T> = T extends readonly [
   ? OUTPUT | MuxOutputUnion<Tail>
   : never;
 
-export type MuxOutputTypes<T> = T extends  readonly [
-      AnyLink<infer INPUT, infer OUTPUT>,
-      ...infer Tail
-    ]
-  ? ProcessType<AnyLink<INPUT, OUTPUT>> | MuxOutputTypes<Tail>
-  : never;
-  
+export type MuxOutputTypes<T> = T extends readonly [
+  infer HEAD,
+  ...infer TAIL
+]
+? ProcessType<HEAD> | MuxOutputTypes<TAIL>
+: never;
+
   
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MuxLink<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]> = {
@@ -107,27 +108,37 @@ export type ProcessSequenceType<LINK> = LINK extends SequenceLink<
 export type ProcessMuxType<LINK> = LINK extends MuxLink<infer INPUT, infer OUTPUT, infer CHILDREN >
   ? Pick<LINK, 'type'> & {
       input: INPUT,
-      // TODO: reinstate children
-      // pdq: number,
-      // children: MuxOutputTypes<CHILDREN>[],
+      children: MuxOutputTypes<CHILDREN>[],
       output: OUTPUT,
     } 
   : never;
 
-export async function process<INPUT, T extends AnyLink<INPUT,any>>(
+// TODO: Compare the following version of process<> with the uncommented version.
+// export async function process<INPUT, T extends AnyLink<INPUT,any>>(
+//   models: IAvailableModels,
+//   link: T,
+//   input: INPUT
+// ): Promise<ProcessType<T>> {
+//   // TODO: remove the following type assertion to any
+//   return processInternal(models, link, input) as any;
+// }
+type MakeLink<T> = T extends AnyLink<infer I, infer O> ? AnyLink<any, any> : never;
+type ExtractInput<T> = T extends AnyLink<infer I, any> ? I : never;
+
+export async function process<INPUT, T>(
   models: IAvailableModels,
   link: T,
-  input: INPUT
+  input: ExtractInput<T>
 ): Promise<ProcessType<T>> {
-  // TODO: remove the following type assertion
-  return processInternal(models, link, input) as any;
+  // TODO: remove the following type assertion to any
+  return processInternal(models, link as unknown as MakeLink<T>, input) as any;
 }
 
 export async function processInternal<INPUT, OUTPUT>(
   models: IAvailableModels,
   link: AnyLink<INPUT, OUTPUT>,
   input: INPUT
-): Promise<ProcessType<typeof link>> {
+) : Promise<ProcessType<typeof link>> {
   const type = link.type;
   if (link.type === 'model') {
     return processModel(models, link, input);
@@ -177,5 +188,6 @@ export async function processMux<INPUT, OUTPUT, CHILDREN extends AnyLink<any, an
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any
   const output = link.output(outputs as any);
-  return {type, input, children, output};
+  // TODO: remove the following type assertion to MuxOutputTypes<CHILDREN>[]
+  return {type, input, children: children as MuxOutputTypes<CHILDREN>[], output};
 }

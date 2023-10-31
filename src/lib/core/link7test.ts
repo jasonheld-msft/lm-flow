@@ -1,4 +1,18 @@
-import { AnyLink, ModelLink, MuxLink, MuxOutputUnion, MuxTypes, ProcessSequenceType, ProcessType, SequenceLink, processInternal, process, processMux } from './link7.js';
+import {
+  AnyLink,
+  ModelLink,
+  MuxLink,
+  MuxOutputUnion,
+  MuxTypes,
+  ProcessSequenceType,
+  ProcessType,
+  SequenceLink,
+  processInternal,
+  process,
+  processMux,
+  MuxOutputTypes,
+  ProcessMuxType
+} from './link7.js';
 import {AvailableModels, createModel} from './models.js';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -89,8 +103,10 @@ export const mux1: MuxLink<number, string, [typeof model1, typeof model2]> = {
 }
 type MT = MuxTypes<typeof mux1.children>;
 type MuxHead<T> = T extends readonly [AnyLink<any, infer OUTPUT>, ... infer TAIL] ? OUTPUT : never;
-type MH = MuxHead<typeof mux1.children>
-type MU = MuxOutputUnion<typeof mux1.children>
+type MH = MuxHead<typeof mux1.children>;
+type MU = MuxOutputUnion<typeof mux1.children>;
+type MO = MuxOutputTypes<typeof mux1.children>;
+type MType = ProcessMuxType<typeof mux1>;
 //type MUX1 = processmux
 const vmux1 = await processMux(models, mux1, 3);
 vmux1;
@@ -98,6 +114,5 @@ vmux1.children[0];
 console.log('=========================');
 console.log(JSON.stringify(vmux1, null, 2));
 const vmux2 = await process(models, mux1, 3);
-// Following does not work yet.
-// vmux2.children
+vmux2.children
 console.log(JSON.stringify(vmux2, null, 2));
