@@ -10,6 +10,10 @@
  *   4. Remove the type assertion to MuxOutputTypes<CHILDREN>[] from processMux()
  *
  ******************************************************************************/
+
+// This file has a need for the use of lots of generic type parameters of type any.
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {IAvailableModels} from './models.js';
 
 export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
@@ -92,9 +96,9 @@ type ProcessModelType<LINK> = LINK extends ModelLink<
 export type ProcessSequenceType<LINK> = LINK extends SequenceLink<
   infer INPUT,
   infer OUTPUT,
-  infer MIDDLE,
-  infer LEFT,
-  infer RIGHT
+  any,
+  any,
+  any
 >
   ? Pick<LINK, 'type'> & {
       input: INPUT;
@@ -125,12 +129,10 @@ export type ProcessMuxType<LINK> = LINK extends MuxLink<
 //   // TODO: remove the following type assertion to any
 //   return processInternal(models, link, input) as any;
 // }
-type MakeLink<T> = T extends AnyLink<infer I, infer O>
-  ? AnyLink<any, any>
-  : never;
+type MakeLink<T> = T extends AnyLink<any, any> ? AnyLink<any, any> : never;
 type ExtractInput<T> = T extends AnyLink<infer I, any> ? I : never;
 
-export async function process<INPUT, T>(
+export async function process<T>(
   models: IAvailableModels,
   link: T,
   input: ExtractInput<T>

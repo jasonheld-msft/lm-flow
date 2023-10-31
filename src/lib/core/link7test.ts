@@ -81,9 +81,10 @@ export const sequence1: SequenceLink<
   left: model1,
   right: model2,
 };
-type S1 = ProcessType<typeof sequence1>;
-let vs1: S1;
-let vs2: ProcessSequenceType<typeof sequence1>;
+export type S1 = ProcessType<typeof sequence1>;
+export let vs1: S1;
+export let vs2: ProcessSequenceType<typeof sequence1>;
+// vs1.left.
 
 export const s = await processInternal(models, sequence1, true);
 export const s1 = await process(models, sequence1, true);
@@ -91,8 +92,23 @@ console.log(JSON.stringify(s1, null, 2));
 export const s2 = await processInternal(models, sequence1, false);
 console.log(JSON.stringify(s2, null, 2));
 
+// This example shouldn't compile because model1
+// cannot be used in a sequence with itself.
+// export const illegalSequence: SequenceLink<
+//   boolean,
+//   string,
+//   number,
+//   typeof model1,
+//   typeof model2
+// > = {
+//   type: 'sequence',
+//   left: model1,
+//   right: model1,
+// };
+
 export const mux1: MuxLink<number, string, [typeof model1, typeof model2]> = {
   type: 'mux',
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   input: (x: number) => [
     {input: true, link: model1},
     {input: 5, link: model2},
@@ -101,14 +117,19 @@ export const mux1: MuxLink<number, string, [typeof model1, typeof model2]> = {
   output: (x: (number | string)[]) => x.map(y => typeof y).join(', '),
   children: [model1, model2],
 };
-type MT = MuxTypes<typeof mux1.children>;
-type MuxHead<T> = T extends readonly [AnyLink<any, infer OUTPUT>, ...infer TAIL]
+export type MT = MuxTypes<typeof mux1.children>;
+export type MuxHead<T> = T extends readonly [
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  AnyLink<any, infer OUTPUT>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ...infer TAIL
+]
   ? OUTPUT
   : never;
-type MH = MuxHead<typeof mux1.children>;
-type MU = MuxOutputUnion<typeof mux1.children>;
-type MO = MuxOutputTypes<typeof mux1.children>;
-type MType = ProcessMuxType<typeof mux1>;
+export type MH = MuxHead<typeof mux1.children>;
+export type MU = MuxOutputUnion<typeof mux1.children>;
+export type MO = MuxOutputTypes<typeof mux1.children>;
+export type MType = ProcessMuxType<typeof mux1>;
 //type MUX1 = processmux
 const vmux1 = await processMux(models, mux1, 3);
 vmux1;
