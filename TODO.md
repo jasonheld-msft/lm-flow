@@ -1,8 +1,12 @@
 * Top
   * links/ensembles
-    * judge() and expected
+    * Revert appplication.ts, keep trainer.ts for now
+    * New zod file loaders
+    * End-to-end integration
     * model override flags
     * training
+    * x Fix prettier configuration after move to pure ESM packages
+    * x judge() and expected
   * iterator symbol for AvailableModels
   * Eliminate concept of stage model override - put in config file?
   * Separate folders for
