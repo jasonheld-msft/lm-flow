@@ -189,7 +189,7 @@ export function loadModels(filename: string): IAvailableModels {
   return new AvailableModels(models);
 }
 
-function createModel(definition: ModelDefinition): IModel {
+export function createModel(definition: ModelDefinition): IModel {
   switch (definition.type) {
     case 'function':
       if (definition.name in functionModels) {
