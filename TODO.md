@@ -1,14 +1,26 @@
 * Top
+  * Mocha
+    * Boolean expression parser cases
+    * Link cases - migrage from link7Test.ts
+  * Factoring for use as a package
+    * X Stage definition file? - decided not to do this
+    * Also special folder that is .gitignored
+    * Remove pipelines folder
   * links/ensembles
-    * Remove `expected` from Link
+    * New zod file loaders
+    * Catch exceptions at top of eval process for test case.
+    * Add judgments to top level of test case.
+    * Allow expected and judge functions on sequence and mux
     * Rename Link to Stage (or Node or something else)
+    * Rename process to eval
     * Convert MuxLink.input() to return child index.
     * Revert appplication.ts, keep trainer.ts for now
-    * TestCaseType
-    * New zod file loaders
+    * x TestCaseType
     * End-to-end integration
-      * Pass optional TestCase argument through process
-      * Remove `expected` from link
+      * Integrate with evaluateTestCases
+      * Remove stage
+      * x Pass optional TestCase argument through process
+      * x Remove `expected` from link
     * model override flags
     * training
     * x Fix prettier configuration after move to pure ESM packages
@@ -23,10 +35,6 @@
   * Train command
   * Add context to TestCases
   * . Model definition should not reside in data/cases.
-  * Factoring for use as a package
-    * Stage definition file?
-    * Also special folder that is .gitignored
-    * Remove pipelines folder
   * OpenAI integration
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.

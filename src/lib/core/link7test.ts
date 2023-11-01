@@ -67,7 +67,7 @@ export const m1Case: TM1a = {
   name: 'model1',
   expected: 5,
 };
-export const m1 = await processInternal(models, model1, true);
+export const m1 = await processInternal(models, model1, true, m1Case);
 
 const model2: ModelLink<number, string, boolean> = {
   type: 'model',
@@ -83,7 +83,7 @@ export const m2Case: TM2a = {
   name: 'model1',
   expected: 'hi',
 };
-export const m2 = await processInternal(models, model1, true);
+export const m2 = await processInternal(models, model1, true, m2Case);
 
 export const sequence1: SequenceLink<
   boolean,
@@ -116,10 +116,10 @@ export let vs1: S1;
 export let vs2: ProcessSequenceType<typeof sequence1>;
 // vs1.left.
 
-export const s = await processInternal(models, sequence1, true);
-export const s1 = await process(models, sequence1, true);
+export const s = await processInternal(models, sequence1, true, s1Case);
+export const s1 = await process(models, sequence1, true, s1Case);
 console.log(JSON.stringify(s1, null, 2));
-export const s2 = await processInternal(models, sequence1, false);
+export const s2 = await processInternal(models, sequence1, false, s1Case);
 console.log(JSON.stringify(s2, null, 2));
 
 // This example shouldn't compile (and it doesn't) because model1
@@ -171,19 +171,24 @@ export const TMux1aCase: TMux1a = {
     },
     {
       type: 'model',
-      name: 'model1',
+      name: 'model2',
       expected: 'hi',
+    },
+    {
+      type: 'model',
+      name: 'model1',
+      expected: 6,
     },
   ],
 };
 
 //type MUX1 = processmux
-const vmux1 = await processMux(models, mux1, 3);
+const vmux1 = await processMux(models, mux1, 3, TMux1aCase);
 vmux1;
 // vmux1.children[1].
 console.log('=========================');
 console.log(JSON.stringify(vmux1, null, 2));
-const vmux2 = await process(models, mux1, 3);
+const vmux2 = await process(models, mux1, 3, TMux1aCase);
 vmux2.children;
 console.log(JSON.stringify(vmux2, null, 2));
 export type TMux = TestCaseMuxType<typeof mux1>;

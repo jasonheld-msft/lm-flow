@@ -32,7 +32,6 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   model: string;
   input: (x: INPUT) => string;
   output: (x: string) => OUTPUT;
-  expected?: OUTPUT;
   judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
 };
 
@@ -206,24 +205,31 @@ type ExtractInput<T> = T extends AnyLink<infer I, any> ? I : never;
 export async function process<T>(
   models: IAvailableModels,
   link: T,
-  input: ExtractInput<T>
+  input: ExtractInput<T>,
+  testCase: TestCaseType<T>
 ): Promise<ProcessType<T>> {
   // TODO: remove the following type assertion to any
-  return processInternal(models, link as unknown as MakeLink<T>, input) as any;
+  return processInternal(
+    models,
+    link as unknown as MakeLink<T>,
+    input,
+    testCase
+  ) as any;
 }
 
 export async function processInternal<INPUT, OUTPUT>(
   models: IAvailableModels,
   link: AnyLink<INPUT, OUTPUT>,
-  input: INPUT
+  input: INPUT,
+  testCase: any // TestCaseType<AnyLink<INPUT, OUTPUT>>
 ): Promise<ProcessType<typeof link>> {
   const type = link.type;
   if (link.type === 'model') {
-    return processModel(models, link, input);
+    return processModel(models, link, input, testCase);
   } else if (link.type === 'sequence') {
-    return processSequence(models, link, input);
+    return processSequence(models, link, input, testCase);
   } else if (link.type === 'mux') {
-    return processMux(models, link, input);
+    return processMux(models, link, input, testCase);
   } else {
     throw new Error(`Unknown link type "${type}"`);
   }
@@ -232,9 +238,12 @@ export async function processInternal<INPUT, OUTPUT>(
 async function processModel<INPUT, OUTPUT, JUDGMENT>(
   models: IAvailableModels,
   link: ModelLink<INPUT, OUTPUT, JUDGMENT>,
-  input: INPUT
+  input: INPUT,
+  testCase: TestCaseType<ModelLink<INPUT, OUTPUT, JUDGMENT>>
 ) {
-  const {type, model, name, judge, expected} = link;
+  verifyTestCaseType(testCase, link);
+  const {type, model, name, judge} = link;
+  const {expected} = testCase;
   const prompt = link.input(input);
   const modelAPI = models.getModel({name, defaultModel: model});
   const completion = await modelAPI.complete(prompt);
@@ -256,11 +265,18 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
 async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT>(
   models: IAvailableModels,
   link: SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT>,
-  input: INPUT
+  input: INPUT,
+  testCase: TestCaseType<SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT>>
 ) {
+  verifyTestCaseType(testCase, link);
   const {type} = link;
-  const left = await processInternal(models, link.left, input);
-  const right = await processInternal(models, link.right, left.output);
+  const left = await processInternal(models, link.left, input, testCase.left);
+  const right = await processInternal(
+    models,
+    link.right,
+    left.output,
+    testCase.right
+  );
   return {type, input, left, right, output: right.output};
 }
 
@@ -272,10 +288,14 @@ export async function processMux<
 >(
   models: IAvailableModels,
   link: MuxLink<INPUT, OUTPUT, CHILDREN>,
-  input: INPUT
+  input: INPUT,
+  testCase: TestCaseMuxType<MuxLink<any, any, CHILDREN>>
 ) {
+  verifyTestCaseType(testCase, link);
   const {type} = link;
-  const promises = link.input(input).map(x => process(models, x.link, x.input));
+  const promises = link
+    .input(input)
+    .map((x, i) => process(models, x.link, x.input, testCase.children[i]));
   const children = await Promise.all(promises);
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any
@@ -287,4 +307,12 @@ export async function processMux<
     children: children as MuxOutputTypes<CHILDREN>[],
     output,
   };
+}
+
+function verifyTestCaseType(testCase: {type: string}, link: {type: string}) {
+  if (testCase.type !== link.type) {
+    throw new Error(
+      `Type mismatch: testCase.type (${testCase.type}) !== link.type (${link.type})`
+    );
+  }
 }
