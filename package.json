@@ -14,7 +14,7 @@
   "license": "MIT",
   "keywords": [],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha 'build/test/**/*.js' --recursive ",
     "lint": "gts lint",
     "clean": "gts clean",
     "compile": "tsc",
@@ -24,13 +24,18 @@
     "posttest": "npm run lint"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.9",
     "@types/fs-extra": "^9.0.13",
     "@types/js-yaml": "^4.0.8",
     "@types/luxon": "^3.3.3",
+    "@types/mocha": "^10.0.3",
     "@types/node": "^14.11.2",
     "@types/prompt-sync": "^4.2.2",
     "@types/uuid": "^9.0.6",
+    "chai": "^4.3.10",
     "gts": "^3.1.1",
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
     "typescript": "~4.7.0"
   },
   "dependencies": {
