@@ -12,6 +12,8 @@ import {
   processMux,
   MuxOutputTypes,
   ProcessMuxType,
+  TestCaseType,
+  TestCaseMuxType,
 } from './link7.js';
 import {AvailableModels, createModel} from './models.js';
 
@@ -58,6 +60,13 @@ const model1: ModelLink<boolean, number, boolean> = {
 // type M1 = ProcessType<typeof model1>;
 // let vm1: M1;
 // vm1.
+// export type TM1 = TestCaseModelType<typeof model1>;
+type TM1a = TestCaseType<typeof model1>;
+export const m1Case: TM1a = {
+  type: 'model',
+  name: 'model1',
+  expected: 5,
+};
 export const m1 = await processInternal(models, model1, true);
 
 const model2: ModelLink<number, string, boolean> = {
@@ -67,6 +76,12 @@ const model2: ModelLink<number, string, boolean> = {
   input: (x: number) => String(x),
   output: (x: string) => x,
   judge: (observed: string, expected: string) => observed === expected,
+};
+type TM2a = TestCaseType<typeof model2>;
+export const m2Case: TM2a = {
+  type: 'model',
+  name: 'model1',
+  expected: 'hi',
 };
 export const m2 = await processInternal(models, model1, true);
 
@@ -81,6 +96,21 @@ export const sequence1: SequenceLink<
   left: model1,
   right: model2,
 };
+// type TS1 = TestCaseSequenceType<typeof sequence1>;
+type TS1a = TestCaseType<typeof sequence1>;
+export const s1Case: TS1a = {
+  type: 'sequence',
+  left: {
+    type: 'model',
+    name: 'model1',
+    expected: 5,
+  },
+  right: {
+    type: 'model',
+    name: 'model1',
+    expected: 'hi',
+  },
+};
 export type S1 = ProcessType<typeof sequence1>;
 export let vs1: S1;
 export let vs2: ProcessSequenceType<typeof sequence1>;
@@ -92,7 +122,7 @@ console.log(JSON.stringify(s1, null, 2));
 export const s2 = await processInternal(models, sequence1, false);
 console.log(JSON.stringify(s2, null, 2));
 
-// This example shouldn't compile because model1
+// This example shouldn't compile (and it doesn't) because model1
 // cannot be used in a sequence with itself.
 // export const illegalSequence: SequenceLink<
 //   boolean,
@@ -130,6 +160,23 @@ export type MH = MuxHead<typeof mux1.children>;
 export type MU = MuxOutputUnion<typeof mux1.children>;
 export type MO = MuxOutputTypes<typeof mux1.children>;
 export type MType = ProcessMuxType<typeof mux1>;
+type TMux1a = TestCaseType<typeof mux1>;
+export const TMux1aCase: TMux1a = {
+  type: 'mux',
+  children: [
+    {
+      type: 'model',
+      name: 'model1',
+      expected: 5,
+    },
+    {
+      type: 'model',
+      name: 'model1',
+      expected: 'hi',
+    },
+  ],
+};
+
 //type MUX1 = processmux
 const vmux1 = await processMux(models, mux1, 3);
 vmux1;
@@ -139,3 +186,4 @@ console.log(JSON.stringify(vmux1, null, 2));
 const vmux2 = await process(models, mux1, 3);
 vmux2.children;
 console.log(JSON.stringify(vmux2, null, 2));
+export type TMux = TestCaseMuxType<typeof mux1>;

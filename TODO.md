@@ -1,8 +1,14 @@
 * Top
   * links/ensembles
+    * Remove `expected` from Link
+    * Rename Link to Stage (or Node or something else)
+    * Convert MuxLink.input() to return child index.
     * Revert appplication.ts, keep trainer.ts for now
+    * TestCaseType
     * New zod file loaders
     * End-to-end integration
+      * Pass optional TestCase argument through process
+      * Remove `expected` from link
     * model override flags
     * training
     * x Fix prettier configuration after move to pure ESM packages
@@ -114,3 +120,19 @@
 * Pure ESM Gist: https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c
 * Typescript: https://www.typescriptlang.org/docs/handbook/modules/reference.html#node16-nodenext
 * Migration: https://dev.to/logto/migrate-a-60k-loc-typescript-nodejs-repo-to-esm-and-testing-become-4x-faster-12-5f82
+
+
+~~~
+// Experiment to see if higher kinded types could be used to
+// reduce code duplication in Mux
+// https://stackoverflow.com/questions/37323581/how-to-specify-generic-type-as-a-generic-higher-kinded-types?rq=4
+// https://stackoverflow.com/questions/64394190/how-to-have-a-generic-type-argument-be-itself-a-generic
+// https://github.com/microsoft/TypeScript/issues/1213
+// export type MuxMap<F, T> = T extends readonly [
+export type MuxMap<G, F extends G<any>, T> = T extends readonly [
+  infer HEAD,
+  ...infer TAIL
+]
+  ? F<HEAD> | MuxMap<F, TAIL>
+  : never;
+~~~

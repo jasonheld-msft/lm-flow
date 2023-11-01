@@ -16,6 +16,16 @@
 
 import {IAvailableModels} from './models.js';
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// AnyLink, ModelLink, SequenceLink, MuxLink
+//
+///////////////////////////////////////////////////////////////////////////////
+export type AnyLink<I, O> =
+  | ModelLink<I, O, any>
+  | SequenceLink<I, O, any, any, any>
+  | MuxLink<I, O, any>;
+
 export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   type: 'model';
   name: string;
@@ -31,6 +41,10 @@ export type SequenceLink<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT> = {
   left: AnyLink<INPUT, MIDDLE> & LEFT;
   right: AnyLink<MIDDLE, OUTPUT> & RIGHT;
 };
+
+//
+// MuxLink
+//
 
 // The union of types of Links in a tuple.
 export type MuxTypes<T> = T extends readonly [
@@ -60,10 +74,67 @@ export type MuxLink<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]> = {
   children: CHILDREN;
 };
 
-export type AnyLink<I, O> =
-  | ModelLink<I, O, any>
-  | SequenceLink<I, O, any, any, any>
-  | MuxLink<I, O, any>;
+///////////////////////////////////////////////////////////////////////////////
+//
+// TestCase
+//
+///////////////////////////////////////////////////////////////////////////////
+export type TestCaseType<LINK> = LINK extends ModelLink<any, any, any>
+  ? TestCaseModelType<LINK>
+  : LINK extends SequenceLink<any, any, any, any, any>
+  ? TestCaseSequenceType<LINK>
+  : LINK extends MuxLink<any, any, any>
+  ? TestCaseMuxType<LINK>
+  : never;
+
+export type TestCaseModelType<LINK> = LINK extends ModelLink<
+  any,
+  infer OUTPUT,
+  any
+>
+  ? Pick<LINK, 'type' | 'name'> & {
+      // input: INPUT;
+      expected?: OUTPUT;
+    }
+  : never;
+
+export type TestCaseSequenceType<LINK> = LINK extends SequenceLink<
+  any,
+  any,
+  any,
+  any,
+  any
+>
+  ? Pick<LINK, 'type'> & {
+      left: TestCaseType<LINK['left']>;
+      right: TestCaseType<LINK['right']>;
+    }
+  : never;
+
+export type TestCaseMuxOutputTypes<T> = T extends readonly [
+  infer HEAD,
+  ...infer TAIL
+]
+  ? TestCaseType<HEAD> | TestCaseMuxOutputTypes<TAIL>
+  : never;
+
+export type TestCaseMuxType<LINK> = LINK extends MuxLink<
+  any,
+  any,
+  infer CHILDREN
+>
+  ? Pick<LINK, 'type'> & {
+      children: TestCaseMuxOutputTypes<CHILDREN>[];
+    }
+  : never;
+
+export type TestCase<T> = {
+  test_case_id: string;
+  tags?: string[];
+  sha: string;
+  input: ExtractInput<T>;
+  expected: MakeLink<T>;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
