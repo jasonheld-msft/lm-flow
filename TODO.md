@@ -1,19 +1,26 @@
 * Top
   * Mocha
-    * Boolean expression parser cases
-    * Link cases - migrage from link7Test.ts
+    * x configure
+    * x Boolean expression parser cases
+    * x Link cases - migrage from link7Test.ts
   * Factoring for use as a package
     * X Stage definition file? - decided not to do this
     * Also special folder that is .gitignored
     * Remove pipelines folder
   * links/ensembles
-    * New zod file loaders
-    * Catch exceptions at top of eval process for test case.
-    * Add judgments to top level of test case.
-    * Allow expected and judge functions on sequence and mux
     * Rename Link to Stage (or Node or something else)
     * Rename process to eval
     * Convert MuxLink.input() to return child index.
+    * Add createExpectedCompletion() to Link/Stage
+    * Add `export * from './link7.js';` to lib/core/index.ts
+      * Need to get rid of types.ts first
+      * Fix imports in unit tests
+    * New zod file loaders
+    * Catch exceptions at top of eval process for test case.
+    * Add judgments to top level of test case.
+      * Allow expected and judge functions on sequence and mux
+      * Sequence
+      * Mux
     * Revert appplication.ts, keep trainer.ts for now
     * x TestCaseType
     * End-to-end integration

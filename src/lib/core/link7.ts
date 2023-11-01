@@ -249,6 +249,7 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   const completion = await modelAPI.complete(prompt);
   const output = link.output(completion);
   const judgment = judge && expected ? judge(output, expected) : undefined;
+  const optionals = judge && expected ? {judgment, expected} : {};
   return {
     type,
     model,
@@ -257,10 +258,15 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
     prompt,
     completion,
     output,
-    expected,
-    judgment,
+    ...optionals,
   };
 }
+
+// function copyDefinedProperties(obj: {[key: string]: any}) {
+//   return Object.fromEntries(
+//     Object.entries(obj).filter(([k, v]) => v !== undefined)
+//   );
+// }
 
 async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT>(
   models: IAvailableModels,

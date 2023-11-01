@@ -1,6 +1,4 @@
 import {Command} from 'commander';
-import {DateTime} from 'luxon';
-import os from 'os';
 
 import {
   Configuration,
