@@ -2,27 +2,33 @@ import fs from 'fs-extra';
 import yaml from 'js-yaml';
 import pLimit from 'p-limit';
 
-import {Application} from './application.js';
 import {Configuration, makeRunlogFilename} from './configure.js';
 import {loadTestCases} from './test-cases.js';
-import {Stage} from './types.js';
+import {AnyLink, process} from './link7.js';
 
-export async function evaluateTestCases<
-  T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
->(configuration: Configuration, stages: T) {
+export async function evaluateTestCases<INPUT, OUTPUT>(
+  configuration: Configuration,
+  ensemble: AnyLink<INPUT, OUTPUT>
+) {
   const logger = configuration.logger;
-  const testCases = await loadTestCases(configuration, stages);
-
-  const application = new Application(stages);
+  const testCases = await loadTestCases(configuration, ensemble);
 
   // Evaluate test cases.
   const limit = pLimit(configuration.concurrancy);
   const logs = await Promise.all(
     testCases.map(testCase =>
-      limit(() => application.eval(configuration.models, testCase))
+      limit(() =>
+        process(
+          configuration.models,
+          ensemble,
+          testCase.input,
+          testCase.expected
+        )
+      )
     )
   );
 
+  // Add ids and SHAs to test case logs.
   const cases = logs.map((log, i) => {
     const {test_case_id, sha} = testCases[i];
     return {test_case_id, sha, log};

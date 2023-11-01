@@ -9,23 +9,27 @@ import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
 import {filesFromFolder} from '../shared/index.js';
 
 import {Configuration} from './configure.js';
-import {Stage, TestCase} from './types.js';
+import {AnyLink, TestCase} from './link7.js';
 
-export async function loadTestCases<
-  T extends ReadonlyArray<Stage<unknown, unknown, unknown>>
->(configuration: Configuration, stages: T) {
-  const logger = configuration.logger;
+export async function loadTestCases<INPUT, OUTPUT>(
+  configuration: Configuration,
+  // The ensemble parameter is only used for type inference.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ensemble: AnyLink<INPUT, OUTPUT>
+): Promise<TestCase<AnyLink<INPUT, OUTPUT>>[]> {
+  // const logger = configuration.logger;
   const limit = pLimit(configuration.concurrancy);
 
-  const validator = z.object({
-    test_case_id: z.string(),
-    sha: z.string(),
-    tags: z.array(z.string()).optional(),
-    input: stages[0].types().input,
-    expected: z.tuple(
-      stages.map(s => s.types().output) as [z.ZodTypeAny, ...z.ZodTypeAny[]]
-    ),
-  });
+  // TODO: restore schema validation
+  // const validator = z.object({
+  //   test_case_id: z.string(),
+  //   sha: z.string(),
+  //   tags: z.array(z.string()).optional(),
+  //   input: stages[0].types().input,
+  //   expected: z.tuple(
+  //     stages.map(s => s.types().output) as [z.ZodTypeAny, ...z.ZodTypeAny[]]
+  //   ),
+  // });
 
   // Walk input folder getting test case files.
   const files = await filesFromFolder(configuration.inputFolder);
@@ -36,15 +40,37 @@ export async function loadTestCases<
   const testCases = buffers.map((buffer, i) => {
     const sha = createHash('sha256').update(buffer).digest('hex');
     const obj = yaml.load(buffer.toString('utf-8'));
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ('sha' in (obj as any)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw new Error(`Found SHA in test case: (sha = ${(obj as any).sha})`);
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (obj as any).sha = sha;
+
     const relativeFileName = path.relative(configuration.inputFolder, files[i]);
     const parts = path.parse(relativeFileName);
     // DESIGN NOTE: use path.posix for text_case_id
     // to get consistent naming across operating systems.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (obj as any).test_case_id = path.posix.join(parts.dir, parts.name);
-    const result = validator.safeParse(obj);
+    if ('testCaseId' in (obj as any)) {
+      throw new Error(
+        `Found testCaseId in test case: (testCaseId = ${
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (obj as any).testCaseId
+        })`
+      );
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (obj as any).testCaseId = path.posix.join(parts.dir, parts.name);
+    // TODO: restore schema validation
+    // const result = validator.safeParse(obj);
+    const result = {
+      success: true,
+      data: obj as TestCase<AnyLink<INPUT, OUTPUT>>,
+      error: {issues: []},
+    };
     if (result.success) {
       // WARNING: this type assertion is dangerous.
       // TODO: REVIEW: asserting as TestCase<T> because the type of
@@ -59,7 +85,7 @@ export async function loadTestCases<
       // is ZodTypeAny. I have so far been unable to make ZodTypeAny
       // specify a required property. It is interesting to note that
       // the `expected` field works correctly.
-      return result.data as unknown as TestCase<T>;
+      return result.data; // as unknown as TestCase<T>;
     } else {
       const zodError = generateErrorMessage(result.error.issues);
       const errorMessage = `In ${files[i]}: ${zodError}`;

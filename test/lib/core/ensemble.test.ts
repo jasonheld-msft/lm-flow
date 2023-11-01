@@ -146,6 +146,7 @@ describe('Ensembles', () => {
           name: 'model1',
           expected: 5,
         };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const {judge, ...model1NoJudge} = model1;
         const observedResult = await process(
           models,

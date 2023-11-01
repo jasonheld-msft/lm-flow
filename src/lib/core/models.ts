@@ -1,12 +1,10 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import z from 'zod';
-import {generateErrorMessage, ErrorMessageOptions} from 'zod-error';
-
-import {StageBase} from './types.js';
+import {generateErrorMessage} from 'zod-error';
 
 export interface IAvailableModels {
-  getModel(stage: StageBase): IModel;
+  getModel(stageName: string, defaultModel: string): IModel;
   models(): IterableIterator<IModel>;
 }
 
@@ -77,13 +75,12 @@ export class AvailableModels implements IAvailableModels {
     this.nameToModel.set(name, model);
   }
 
-  getModel(stage: StageBase): IModel {
-    const modelName =
-      this.stageModelOverrides.get(stage.name) || stage.defaultModel;
+  getModel(stageName: string, defaultModel: string): IModel {
+    const modelName = this.stageModelOverrides.get(stageName) || defaultModel;
     const model = this.nameToModel.get(modelName);
     if (!model) {
       throw new Error(
-        `Cannot find model "${modelName}" for stage "${stage.name}".`
+        `Cannot find model "${modelName}" for stage "${stageName}".`
       );
     }
     return model;

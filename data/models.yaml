@@ -1,7 +1,7 @@
 # - type: function
 #   name: f1
 - type: mock
-  name: stage1model
+  name: model1
   config:
     exactMatch: false
     defaultResponse: "I don't understand"
@@ -11,7 +11,7 @@
       - prompt: hello
         completion: '1'
 - type: mock
-  name: stage2model
+  name: model2
   config:
     exactMatch: false
     defaultResponse: "I don't understand"

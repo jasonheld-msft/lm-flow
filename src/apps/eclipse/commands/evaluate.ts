@@ -6,8 +6,7 @@ import {
   wrapper,
 } from '../../../lib/core/index.js';
 import {ILogger} from '../../../lib/shared/index.js';
-
-import {makeStages} from '../../../lib/pipelines/example.js';
+import {sequence1} from '../../../samples/ensemble1.js';
 
 export interface EvaluateOptions {
   concurrancy?: number;
@@ -29,10 +28,6 @@ export async function evaluateInternal(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   options: EvaluateOptions
 ) {
-  console.log('Evaluate command not implemented.');
-
-  // const models = configuration.models;
-  const stages = makeStages();
-
-  await evaluateTestCases(configuration, stages);
+  const ensemble = sequence1;
+  await evaluateTestCases(configuration, ensemble);
 }

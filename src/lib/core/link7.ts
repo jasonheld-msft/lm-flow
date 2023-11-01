@@ -78,6 +78,14 @@ export type MuxLink<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]> = {
 // TestCase
 //
 ///////////////////////////////////////////////////////////////////////////////
+export interface TestCase<T extends AnyLink<any, any>> {
+  test_case_id: string;
+  tags?: string[];
+  sha: string;
+  input: ExtractInput<T>;
+  expected: TestCaseType<T>;
+}
+
 export type TestCaseType<LINK> = LINK extends ModelLink<any, any, any>
   ? TestCaseModelType<LINK>
   : LINK extends SequenceLink<any, any, any, any, any>
@@ -126,14 +134,6 @@ export type TestCaseMuxType<LINK> = LINK extends MuxLink<
       children: TestCaseMuxOutputTypes<CHILDREN>[];
     }
   : never;
-
-export type TestCase<T> = {
-  test_case_id: string;
-  tags?: string[];
-  sha: string;
-  input: ExtractInput<T>;
-  expected: MakeLink<T>;
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -199,8 +199,10 @@ export type ProcessMuxType<LINK> = LINK extends MuxLink<
 //   // TODO: remove the following type assertion to any
 //   return processInternal(models, link, input) as any;
 // }
-type MakeLink<T> = T extends AnyLink<any, any> ? AnyLink<any, any> : never;
-type ExtractInput<T> = T extends AnyLink<infer I, any> ? I : never;
+export type MakeLink<T> = T extends AnyLink<any, any>
+  ? AnyLink<any, any>
+  : never;
+export type ExtractInput<T> = T extends AnyLink<infer I, any> ? I : never;
 
 export async function process<T>(
   models: IAvailableModels,
@@ -221,6 +223,7 @@ export async function processInternal<INPUT, OUTPUT>(
   models: IAvailableModels,
   link: AnyLink<INPUT, OUTPUT>,
   input: INPUT,
+  // TODO: fix type cast in processInternal
   testCase: any // TestCaseType<AnyLink<INPUT, OUTPUT>>
 ): Promise<ProcessType<typeof link>> {
   const type = link.type;
@@ -245,7 +248,7 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   const {type, model, name, judge} = link;
   const {expected} = testCase;
   const prompt = link.input(input);
-  const modelAPI = models.getModel({name, defaultModel: model});
+  const modelAPI = models.getModel(name, model);
   const completion = await modelAPI.complete(prompt);
   const output = link.output(completion);
   const judgment = judge && expected ? judge(output, expected) : undefined;
@@ -315,10 +318,18 @@ export async function processMux<
   };
 }
 
-function verifyTestCaseType(testCase: {type: string}, link: {type: string}) {
+function verifyTestCaseType(
+  testCase: {type: string; name?: string},
+  link: {type: string; name?: string}
+) {
   if (testCase.type !== link.type) {
     throw new Error(
       `Type mismatch: testCase.type (${testCase.type}) !== link.type (${link.type})`
+    );
+  }
+  if (testCase.name && link.name && testCase.name !== link.name) {
+    throw new Error(
+      `Name mismatch: testCase.name (${testCase.name}) !== link.name (${link.name})`
     );
   }
 }

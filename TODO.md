@@ -1,37 +1,44 @@
 * Top
-  * Mocha
-    * x configure
-    * x Boolean expression parser cases
-    * x Link cases - migrage from link7Test.ts
-  * Factoring for use as a package
-    * X Stage definition file? - decided not to do this
-    * Also special folder that is .gitignored
-    * Remove pipelines folder
   * links/ensembles
-    * Rename Link to Stage (or Node or something else)
-    * Rename process to eval
-    * Convert MuxLink.input() to return child index.
-    * Add createExpectedCompletion() to Link/Stage
-    * Add `export * from './link7.js';` to lib/core/index.ts
-      * Need to get rid of types.ts first
-      * Fix imports in unit tests
-    * New zod file loaders
-    * Catch exceptions at top of eval process for test case.
     * Add judgments to top level of test case.
       * Allow expected and judge functions on sequence and mux
       * Sequence
       * Mux
-    * Revert appplication.ts, keep trainer.ts for now
-    * x TestCaseType
-    * End-to-end integration
-      * Integrate with evaluateTestCases
-      * Remove stage
-      * x Pass optional TestCase argument through process
-      * x Remove `expected` from link
+    * New zod file loaders
+      * Restore schema validation
+    * Add createExpectedCompletion() to Link/Stage
+    * Catch exceptions at top of eval process for test case.
+    * Convert MuxLink.input() to return child index.
+    * Add user context to input() methods of links.
+    * Factor AnyLink/TestCaseType/Process
+    * Rename Link to Stage (or Node or something else)
+    * Rename process to eval
+    * Rename imput => makePrompt, output => parsePrompt?
+    * Disallow duplicate link/stage names? What about cycles?
+    * TODO: fix type cast in processInternal
+    * Add `export * from './link7.js';` to lib/core/index.ts
+      * Need to get rid of types.ts first
+      * Fix imports in unit tests
     * model override flags
     * training
+    * x Revert appplication.ts, keep trainer.ts for now
+    * x End-to-end integration
+      * x Integrate with evaluateTestCases
+      * x Remove stage
+      * x Pass optional TestCase argument through process
+      * x Remove `expected` from link
+    * x Integration
+      * x Single model
+    * x TestCaseType
+    * x Handlebars input function generator.
+    * x TODO: throw if overwriting SHA
+    * x TODO: throw if overwriting test_case_id
     * x Fix prettier configuration after move to pure ESM packages
     * x judge() and expected
+  * Factoring for use as a package
+    * X Stage definition file? - decided not to do this
+    * Also special folder that is .gitignored
+    * x Remove pipelines folder
   * iterator symbol for AvailableModels
   * Eliminate concept of stage model override - put in config file?
   * Separate folders for
@@ -56,6 +63,10 @@
   * Move .env configuration out of configure() - separate from logger.
   * Reorganize types.ts
   * Configure mocha and test runner
+  * Mocha
+    * x configure
+    * x Boolean expression parser cases
+    * x Link cases - migrage from link7Test.ts
 
 
   * Accept yaml or json inputs

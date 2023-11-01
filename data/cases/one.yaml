@@ -1,3 +1,6 @@
 tags: [one]
 input: Hello, world
-expected: [2, 'hello hello']
+expected:
+  type: 'sequence'
+  left: {type: 'model', name: 'model1', expected: 2}
+  right: {type: 'model', name: 'model2', expected: 'hello hello'}
