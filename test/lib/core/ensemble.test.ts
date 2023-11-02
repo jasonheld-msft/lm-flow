@@ -81,18 +81,20 @@ describe('Ensembles', () => {
     validators: {input: z.boolean(), output: z.string()},
   };
 
-  const mux1: MuxLink<number, string, [typeof model1, typeof model2]> = {
-    type: 'mux',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    input: (x: number) => [
-      {input: true, link: model1},
-      {input: 5, link: model2},
-      {input: false, link: model1},
-    ],
-    output: (x: (number | string)[]) => x.map(y => typeof y).join(', '),
-    children: [model1, model2],
-    validators: {input: z.number(), output: z.string()},
-  };
+  const mux1: MuxLink<number, string, [typeof model1, typeof model2], unknown> =
+    {
+      type: 'mux',
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      input: (x: number) => [
+        {input: true, link: model1},
+        {input: 5, link: model2},
+        {input: false, link: model1},
+      ],
+      output: (x: (number | string)[]) => x.map(y => typeof y).join(', '),
+      children: [model1, model2],
+      judge: (observed: string, expected: string) => observed === expected,
+      validators: {input: z.number(), output: z.string()},
+    };
 
   describe('process()', () => {
     ///////////////////////////////////////////////////////////////////////////////
@@ -330,6 +332,7 @@ describe('Ensembles', () => {
               expected: 6,
             },
           ],
+          expected: 'number, string, number',
         };
 
         const observedResult = await process(models, mux1, 3, expectedValues);
@@ -376,6 +379,8 @@ describe('Ensembles', () => {
             },
           ],
           output: 'number, string, number',
+          expected: 'number, string, number',
+          judgment: true,
         };
         assert.deepEqual(observedResult, expectedResult);
       });

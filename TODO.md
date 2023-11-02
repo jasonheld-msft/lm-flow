@@ -1,19 +1,23 @@
 * Top
+  * Documentation
+    * Install/build/toolchain
+    * Conceptual explanation
+      * More compelling example
+      * Diagram matching example
+    * Instructions on creating an ensemble
+  * Install and configure wc
+  * Factoring for use as a package
+    * Ability to inject models and ensembles
+    * Ability to configure command-line arguments
+    * X Stage definition file? - decided not to do this
+    * Also special folder that is .gitignored
+    * x Remove pipelines folder
   * links/ensembles
-    * Add judgments to top level of test case.
-      * Allow expected and judge functions on sequence and mux
-      * x Sequence
-      * Mux
-    * New zod file loaders
-      * x Restore schema validation
-      * Will need special handling for cycles in graph
-      * Disallow duplicate link/stage names? What about cycles?
-      * Process loop limit count for cycles
-      * Switch stage to loop back or move forward
-    * Add createExpectedCompletion() to Link/Stage
+    * Add user context to input() methods of links.
+    * Training
+      * Add createExpectedCompletion() to Link/Stage
     * Catch exceptions at top of eval process for test case.
     * Convert MuxLink.input() to return child index.
-    * Add user context to input() methods of links.
     * Factor AnyLink/TestCaseType/Process
     * Rename Link to Stage (or Node or something else)
     * Rename process to eval
@@ -23,7 +27,16 @@
       * Need to get rid of types.ts first
       * Fix imports in unit tests
     * model override flags
-    * training
+    * New zod file loaders
+      * x Restore schema validation
+      * Will need special handling for cycles in graph
+      * Disallow duplicate link/stage names? What about cycles?
+      * Process loop limit count for cycles
+      * Switch stage to loop back or move forward
+    * x Add judgments to top level of test case.
+      * x Allow expected and judge functions on sequence and mux
+      * x Sequence
+      * x Mux
     * x Revert appplication.ts, keep trainer.ts for now
     * x End-to-end integration
       * x Integrate with evaluateTestCases
@@ -38,10 +51,6 @@
     * x TODO: throw if overwriting test_case_id
     * x Fix prettier configuration after move to pure ESM packages
     * x judge() and expected
-  * Factoring for use as a package
-    * X Stage definition file? - decided not to do this
-    * Also special folder that is .gitignored
-    * x Remove pipelines folder
   * iterator symbol for AvailableModels
   * Eliminate concept of stage model override - put in config file?
   * Separate folders for

@@ -26,7 +26,7 @@ import {IAvailableModels} from './models.js';
 export type AnyLink<I, O> =
   | ModelLink<I, O, any>
   | SequenceLink<I, O, any, any, any, any>
-  | MuxLink<I, O, any>;
+  | MuxLink<I, O, any, any>;
 
 export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   type: 'model';
@@ -71,11 +71,17 @@ export type MuxOutputTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
   : never;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type MuxLink<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]> = {
+export type MuxLink<
+  INPUT,
+  OUTPUT,
+  CHILDREN extends AnyLink<any, any>[],
+  JUDGMENT
+> = {
   type: 'mux';
   input: (x: INPUT) => MuxTypes<CHILDREN>[];
   output: (x: MuxOutputUnion<CHILDREN>[]) => OUTPUT;
   children: CHILDREN;
+  judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
   validators: Validators<INPUT, OUTPUT>;
 };
 
@@ -101,7 +107,7 @@ export type TestCaseType<LINK> = LINK extends ModelLink<any, any, any>
   ? TestCaseModelType<LINK>
   : LINK extends SequenceLink<any, any, any, any, any, any>
   ? TestCaseSequenceType<LINK>
-  : LINK extends MuxLink<any, any, any>
+  : LINK extends MuxLink<any, any, any, any>
   ? TestCaseMuxType<LINK>
   : never;
 
@@ -139,11 +145,13 @@ export type TestCaseMuxOutputTypes<T> = T extends readonly [
 
 export type TestCaseMuxType<LINK> = LINK extends MuxLink<
   any,
-  any,
-  infer CHILDREN
+  infer OUTPUT,
+  infer CHILDREN,
+  any
 >
   ? Pick<LINK, 'type'> & {
       children: TestCaseMuxOutputTypes<CHILDREN>[];
+      expected?: OUTPUT;
     }
   : never;
 
@@ -156,7 +164,7 @@ export type ProcessType<LINK> = LINK extends ModelLink<any, any, any>
   ? ProcessModelType<LINK>
   : LINK extends SequenceLink<any, any, any, any, any, any>
   ? ProcessSequenceType<LINK>
-  : LINK extends MuxLink<any, any, any>
+  : LINK extends MuxLink<any, any, any, any>
   ? ProcessMuxType<LINK>
   : never;
 
@@ -196,12 +204,15 @@ export type ProcessSequenceType<LINK> = LINK extends SequenceLink<
 export type ProcessMuxType<LINK> = LINK extends MuxLink<
   infer INPUT,
   infer OUTPUT,
-  infer CHILDREN
+  infer CHILDREN,
+  infer JUDGMENT
 >
   ? Pick<LINK, 'type'> & {
       input: INPUT;
       children: MuxOutputTypes<CHILDREN>[];
       output: OUTPUT;
+      expected?: OUTPUT;
+      judgment?: JUDGMENT;
     }
   : never;
 
@@ -308,15 +319,17 @@ async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT>(
 export async function processMux<
   INPUT,
   OUTPUT,
-  CHILDREN extends AnyLink<any, any>[]
+  CHILDREN extends AnyLink<any, any>[],
+  JUDGMENT
 >(
   models: IAvailableModels,
-  link: MuxLink<INPUT, OUTPUT, CHILDREN>,
+  link: MuxLink<INPUT, OUTPUT, CHILDREN, JUDGMENT>,
   input: INPUT,
-  testCase: TestCaseMuxType<MuxLink<any, any, CHILDREN>>
+  testCase: TestCaseMuxType<MuxLink<any, any, CHILDREN, JUDGMENT>>
 ) {
   verifyTestCaseType(testCase, link);
-  const {type} = link;
+  const {type, judge} = link;
+  const {expected} = testCase;
   const promises = link
     .input(input)
     .map((x, i) => process(models, x.link, x.input, testCase.children[i]));
@@ -324,12 +337,15 @@ export async function processMux<
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any
   const output = link.output(outputs as any);
+  const judgment = judge && expected ? judge(output, expected) : undefined;
+  const optionals = judge && expected ? {judgment, expected} : {};
   // TODO: remove the following type assertion to MuxOutputTypes<CHILDREN>[]
   return {
     type,
     input,
     children: children as MuxOutputTypes<CHILDREN>[],
     output,
+    ...optionals,
   };
 }
 
@@ -361,9 +377,12 @@ export function validator<INPUT, OUTPUT>(
   }
 }
 
-function validatorMux<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]>(
-  link: MuxLink<INPUT, OUTPUT, CHILDREN>
-) {
+function validatorMux<
+  INPUT,
+  OUTPUT,
+  CHILDREN extends AnyLink<any, any>[],
+  JUDGMENT
+>(link: MuxLink<INPUT, OUTPUT, CHILDREN, JUDGMENT>) {
   const c = link.children.map(x => validator(x));
   return z.object({
     type: z.literal('mux'),
