@@ -25,7 +25,7 @@ import {IAvailableModels} from './models.js';
 ///////////////////////////////////////////////////////////////////////////////
 export type AnyLink<I, O> =
   | ModelLink<I, O, any>
-  | SequenceLink<I, O, any, any, any>
+  | SequenceLink<I, O, any, any, any, any>
   | MuxLink<I, O, any>;
 
 export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
@@ -38,10 +38,11 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   validators: Validators<INPUT, OUTPUT>;
 };
 
-export type SequenceLink<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT> = {
+export type SequenceLink<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT> = {
   type: 'sequence';
   left: AnyLink<INPUT, MIDDLE> & LEFT;
   right: AnyLink<MIDDLE, OUTPUT> & RIGHT;
+  judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
   validators: Validators<INPUT, OUTPUT>;
 };
 
@@ -98,7 +99,7 @@ export interface TestCase<T extends AnyLink<any, any>> {
 
 export type TestCaseType<LINK> = LINK extends ModelLink<any, any, any>
   ? TestCaseModelType<LINK>
-  : LINK extends SequenceLink<any, any, any, any, any>
+  : LINK extends SequenceLink<any, any, any, any, any, any>
   ? TestCaseSequenceType<LINK>
   : LINK extends MuxLink<any, any, any>
   ? TestCaseMuxType<LINK>
@@ -110,13 +111,13 @@ export type TestCaseModelType<LINK> = LINK extends ModelLink<
   any
 >
   ? Pick<LINK, 'type' | 'name'> & {
-      // input: INPUT;
       expected?: OUTPUT;
     }
   : never;
 
 export type TestCaseSequenceType<LINK> = LINK extends SequenceLink<
   any,
+  infer OUTPUT,
   any,
   any,
   any,
@@ -125,6 +126,7 @@ export type TestCaseSequenceType<LINK> = LINK extends SequenceLink<
   ? Pick<LINK, 'type'> & {
       left: TestCaseType<LINK['left']>;
       right: TestCaseType<LINK['right']>;
+      expected?: OUTPUT;
     }
   : never;
 
@@ -152,7 +154,7 @@ export type TestCaseMuxType<LINK> = LINK extends MuxLink<
 ///////////////////////////////////////////////////////////////////////////////
 export type ProcessType<LINK> = LINK extends ModelLink<any, any, any>
   ? ProcessModelType<LINK>
-  : LINK extends SequenceLink<any, any, any, any, any>
+  : LINK extends SequenceLink<any, any, any, any, any, any>
   ? ProcessSequenceType<LINK>
   : LINK extends MuxLink<any, any, any>
   ? ProcessMuxType<LINK>
@@ -178,13 +180,16 @@ export type ProcessSequenceType<LINK> = LINK extends SequenceLink<
   infer OUTPUT,
   any,
   any,
-  any
+  any,
+  infer JUDGMENT
 >
   ? Pick<LINK, 'type'> & {
       input: INPUT;
       left: ProcessType<LINK['left']>;
       right: ProcessType<LINK['right']>;
       output: OUTPUT;
+      expected?: OUTPUT;
+      judgment?: JUDGMENT;
     }
   : never;
 
@@ -275,20 +280,17 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   };
 }
 
-// function copyDefinedProperties(obj: {[key: string]: any}) {
-//   return Object.fromEntries(
-//     Object.entries(obj).filter(([k, v]) => v !== undefined)
-//   );
-// }
-
-async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT>(
+async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT>(
   models: IAvailableModels,
-  link: SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT>,
+  link: SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT, JUDGMENT>,
   input: INPUT,
-  testCase: TestCaseType<SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT>>
+  testCase: TestCaseType<
+    SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT, JUDGMENT>
+  >
 ) {
   verifyTestCaseType(testCase, link);
-  const {type} = link;
+  const {type, judge} = link;
+  const {expected} = testCase;
   const left = await processInternal(models, link.left, input, testCase.left);
   const right = await processInternal(
     models,
@@ -296,7 +298,10 @@ async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT>(
     left.output,
     testCase.right
   );
-  return {type, input, left, right, output: right.output};
+  const output = right.output;
+  const judgment = judge && expected ? judge(output, expected) : undefined;
+  const optionals = judge && expected ? {judgment, expected} : {};
+  return {type, input, left, right, output, ...optionals};
 }
 
 // TODO: exported for testing

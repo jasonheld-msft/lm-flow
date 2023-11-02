@@ -2,7 +2,7 @@
   * links/ensembles
     * Add judgments to top level of test case.
       * Allow expected and judge functions on sequence and mux
-      * Sequence
+      * x Sequence
       * Mux
     * New zod file loaders
       * x Restore schema validation

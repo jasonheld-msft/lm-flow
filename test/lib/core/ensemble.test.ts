@@ -71,11 +71,13 @@ describe('Ensembles', () => {
     string,
     number,
     typeof model1,
-    typeof model2
+    typeof model2,
+    unknown
   > = {
     type: 'sequence',
     left: model1,
     right: model2,
+    judge: (observed: string, expected: string) => observed === expected,
     validators: {input: z.boolean(), output: z.string()},
   };
 
@@ -210,6 +212,7 @@ describe('Ensembles', () => {
             name: 'model2',
             expected: 'hi',
           },
+          expected: 'true',
         };
 
         const observedResult = await process(
@@ -244,7 +247,9 @@ describe('Ensembles', () => {
             expected: 'hi',
             judgment: false,
           },
+          expected: 'true',
           output: 'true',
+          judgment: true,
         };
         assert.deepEqual(observedResult, expectedResult);
       });

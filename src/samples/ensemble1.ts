@@ -40,7 +40,8 @@ export const sequence1: SequenceLink<
   string,
   number,
   typeof model1,
-  typeof model2
+  typeof model2,
+  unknown
 > = {
   type: 'sequence',
   left: model1,
