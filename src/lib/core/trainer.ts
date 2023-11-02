@@ -55,10 +55,10 @@
 //     return {test_case_id, sha, log};
 //   });
 
-//   const {cmd, cwd, test_run_id, user} = configuration;
+//   const {cmd, cwd, testRunId, user} = configuration;
 //   const timestamp = configuration.timestamp;
 //   const models = [...configuration.models.models()].map(m => m.spec());
-//   const runLog = {test_run_id, cmd, cwd, timestamp, user, models, cases};
+//   const runLog = {testRunId, cmd, cwd, timestamp, user, models, cases};
 
 //   // Serialize run log to disk.
 //   const text = yaml.dump(runLog);

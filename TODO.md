@@ -15,7 +15,7 @@
     * X Stage definition file? - decided not to do this
     * x Remove pipelines folder
   * links/ensembles
-    * Rename test_run_id
+    * x Rename test_run_id to testRunId
     * Make judge() function async to allow for LLM judgment
       * Example of calling standalone ensemble from judge()
     * Make output() function async to allow for calls to external services

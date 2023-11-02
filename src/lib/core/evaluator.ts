@@ -42,11 +42,11 @@ export async function evaluateTestCases<INPUT, OUTPUT>(
     return {testCaseId, sha, context, log};
   });
 
-  const {cmd, cwd, test_run_id, user} = configuration;
+  const {cmd, cwd, testRunId, user} = configuration;
   const timestamp = configuration.timestamp;
   const models = [...configuration.models.models()].map(m => m.spec());
   const runLog = {
-    testRunId: test_run_id,
+    testRunId,
     cmd,
     cwd,
     timestamp,

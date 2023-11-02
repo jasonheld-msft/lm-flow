@@ -36,7 +36,7 @@ export interface Configuration {
   models: IAvailableModels;
   openAIKey?: string;
   outputFolder: string;
-  test_run_id: string;
+  testRunId: string;
   timestamp: Date;
   user: string;
 }
@@ -117,7 +117,7 @@ function validateConfiguration(
   const cmd = process.argv.join(' ');
   const cwd = process.cwd();
   const dryrun = !!options.dryrun;
-  const test_run_id = uuidv4();
+  const testRunId = uuidv4();
   const timestamp = new Date();
   const user = os.userInfo().username;
 
@@ -159,7 +159,7 @@ function validateConfiguration(
     models,
     openAIKey,
     outputFolder,
-    test_run_id,
+    testRunId,
     timestamp,
     user,
   };
@@ -168,9 +168,9 @@ function validateConfiguration(
 export function makeRunlogFilename({
   logFile,
   outputFolder,
-  test_run_id,
+  testRunId,
 }: Configuration) {
-  const filename = logFile || test_run_id + '.yaml';
+  const filename = logFile || testRunId + '.yaml';
 
   // WARNING: do not use path.posix() here. Required for resolve to work correctly
   // on Windows with absolute paths.
