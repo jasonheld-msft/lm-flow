@@ -2,16 +2,17 @@ import {assert} from 'chai';
 import 'mocha';
 import z from 'zod';
 
-import {AvailableModels, createModel} from '../../../src/lib/index.js';
 import {
-  process,
+  AvailableModels,
+  createModel,
   ModelLink,
-  TestCaseType,
+  MuxLink,
+  process,
   ProcessType,
   SequenceLink,
-  MuxLink,
+  TestCaseType,
   validator,
-} from '../../../src/lib/core/link7.js';
+} from '../../../src/lib/index.js';
 
 describe('Ensembles', () => {
   ///////////////////////////////////////////////////////////////////////////////

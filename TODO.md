@@ -5,27 +5,26 @@
       * More compelling example
       * Diagram matching example
     * Instructions on creating an ensemble
-  * Install and configure wc
+  * . Install and configure cloc
+    * choco install activeperl
   * Factoring for use as a package
     * Ability to inject models and ensembles
     * Ability to configure command-line arguments
-    * X Stage definition file? - decided not to do this
     * Also special folder that is .gitignored
+    * X Stage definition file? - decided not to do this
     * x Remove pipelines folder
   * links/ensembles
     * Add user context to input() methods of links.
+    * Convert MuxLink.input() to return child index.
     * Training
       * Add createExpectedCompletion() to Link/Stage
     * Catch exceptions at top of eval process for test case.
-    * Convert MuxLink.input() to return child index.
     * Factor AnyLink/TestCaseType/Process
+    * Ensemble folder under lib? types, process, validate, train
     * Rename Link to Stage (or Node or something else)
     * Rename process to eval
     * Rename imput => makePrompt, output => parsePrompt?
     * TODO: fix type cast in processInternal
-    * Add `export * from './link7.js';` to lib/core/index.ts
-      * Need to get rid of types.ts first
-      * Fix imports in unit tests
     * model override flags
     * New zod file loaders
       * x Restore schema validation
@@ -33,6 +32,9 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x Add `export * from './link7.js';` to lib/core/index.ts
+      * x Need to get rid of types.ts first
+      * x Fix imports in unit tests
     * x Add judgments to top level of test case.
       * x Allow expected and judge functions on sequence and mux
       * x Sequence

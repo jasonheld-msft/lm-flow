@@ -1,7 +1,7 @@
 import z from 'zod';
 import dedent from 'dedent';
 import Handlebars from 'handlebars';
-import {ModelLink, SequenceLink} from '../lib/core/link7.js';
+import {ModelLink, SequenceLink} from '../lib/index.js';
 
 export const model1: ModelLink<string, number, boolean> = {
   type: 'model',

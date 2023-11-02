@@ -21,7 +21,8 @@
     "fix": "gts fix",
     "prepare": "npm run compile",
     "pretest": "npm run compile",
-    "posttest": "npm run lint"
+    "posttest": "npm run lint",
+    "cloc": "cloc src"
   },
   "devDependencies": {
     "@types/chai": "^4.3.9",
@@ -33,6 +34,7 @@
     "@types/prompt-sync": "^4.2.2",
     "@types/uuid": "^9.0.6",
     "chai": "^4.3.10",
+    "cloc": "^1.98.0-cloc",
     "gts": "^3.1.1",
     "mocha": "^10.2.0",
     "ts-node": "^10.9.1",

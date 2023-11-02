@@ -22,20 +22,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "link7test",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/build/src/lib/core/link7test.js",
-      "args": ["eval", "-o", "foo", "-k", "123"],
-      "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": [
-        "${workspaceFolder}/build/**/*.js"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "example",
       "skipFiles": [
         "<node_internals>/**"
