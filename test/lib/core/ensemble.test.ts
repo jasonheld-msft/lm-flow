@@ -1,5 +1,6 @@
 import {assert} from 'chai';
 import 'mocha';
+import z from 'zod';
 
 import {AvailableModels, createModel} from '../../../src/lib/index.js';
 import {
@@ -9,6 +10,7 @@ import {
   ProcessType,
   SequenceLink,
   MuxLink,
+  validator,
 } from '../../../src/lib/core/link7.js';
 
 describe('Ensembles', () => {
@@ -51,6 +53,7 @@ describe('Ensembles', () => {
     input: (x: boolean) => String(x),
     output: (x: string) => x.length,
     judge: (observed: number, expected: number) => observed === expected,
+    validators: {input: z.boolean(), output: z.number()},
   };
 
   const model2: ModelLink<number, string, boolean> = {
@@ -60,6 +63,7 @@ describe('Ensembles', () => {
     input: (x: number) => String(x),
     output: (x: string) => x,
     judge: (observed: string, expected: string) => observed === expected,
+    validators: {input: z.number(), output: z.string()},
   };
 
   const sequence1: SequenceLink<
@@ -72,6 +76,7 @@ describe('Ensembles', () => {
     type: 'sequence',
     left: model1,
     right: model2,
+    validators: {input: z.boolean(), output: z.string()},
   };
 
   const mux1: MuxLink<number, string, [typeof model1, typeof model2]> = {
@@ -84,6 +89,7 @@ describe('Ensembles', () => {
     ],
     output: (x: (number | string)[]) => x.map(y => typeof y).join(', '),
     children: [model1, model2],
+    validators: {input: z.number(), output: z.string()},
   };
 
   describe('process()', () => {
@@ -165,6 +171,24 @@ describe('Ensembles', () => {
         };
         assert.deepEqual(observedResult, expectedResult);
       });
+      it('validation: success', async () => {
+        const expectedValid: TestCaseType<typeof model1> = {
+          type: 'model',
+          name: 'model1',
+          expected: 5,
+        };
+        const result = validator(model1).safeParse(expectedValid);
+        assert.deepEqual(result, {success: true, data: expectedValid});
+      });
+      it('validation: failure', async () => {
+        const expectedInvalid = {
+          type: 'model',
+          name: 'model1',
+          expected: 'hello',
+        };
+        const result = validator(model1).safeParse(expectedInvalid);
+        assert.isFalse(result.success);
+      });
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -183,7 +207,7 @@ describe('Ensembles', () => {
           },
           right: {
             type: 'model',
-            name: 'model1',
+            name: 'model2',
             expected: 'hi',
           },
         };
@@ -223,6 +247,41 @@ describe('Ensembles', () => {
           output: 'true',
         };
         assert.deepEqual(observedResult, expectedResult);
+      });
+      it('validation: success', async () => {
+        const expectedValid: TestCaseType<typeof sequence1> = {
+          type: 'sequence',
+          left: {
+            type: 'model',
+            name: 'model1',
+            expected: 5,
+          },
+          right: {
+            type: 'model',
+            name: 'model2',
+            expected: 'hi', // Expected type should be number
+          },
+        };
+        const result = validator(sequence1).safeParse(expectedValid);
+        assert.deepEqual(result, {success: true, data: expectedValid});
+      });
+      it('validation: failure', async () => {
+        const expectedInvalid = {
+          type: 'sequence',
+          left: {
+            type: 'model',
+            name: 'model1',
+            expected: 5,
+          },
+          // Missing right side
+          // right: {
+          //   type: 'model',
+          //   name: 'model2',
+          //   expected: 'hi',
+          // },
+        };
+        const result = validator(sequence1).safeParse(expectedInvalid);
+        assert.isFalse(result.success);
       });
     });
 
@@ -314,6 +373,55 @@ describe('Ensembles', () => {
           output: 'number, string, number',
         };
         assert.deepEqual(observedResult, expectedResult);
+      });
+
+      it('validation: success', async () => {
+        const expectedValid: TestCaseType<typeof mux1> = {
+          type: 'mux',
+          children: [
+            {
+              type: 'model',
+              name: 'model1',
+              expected: 5,
+            },
+            {
+              type: 'model',
+              name: 'model2',
+              expected: 'hi',
+            },
+            {
+              type: 'model',
+              name: 'model1',
+              expected: 6,
+            },
+          ],
+        };
+        const result = validator(mux1).safeParse(expectedValid);
+        assert.deepEqual(result, {success: true, data: expectedValid});
+      });
+      it('validation: failure', async () => {
+        const expectedInvalid = {
+          type: 'mux',
+          children: [
+            {
+              type: 'model',
+              name: 'model1',
+              expected: 5,
+            },
+            {
+              type: 'model',
+              name: 'model2',
+              expected: 'hi',
+            },
+            {
+              type: 'model',
+              name: 'model1',
+              expected: true, // Should have been a number
+            },
+          ],
+        };
+        const result = validator(sequence1).safeParse(expectedInvalid);
+        assert.isFalse(result.success);
       });
     });
   });

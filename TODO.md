@@ -5,7 +5,11 @@
       * Sequence
       * Mux
     * New zod file loaders
-      * Restore schema validation
+      * x Restore schema validation
+      * Will need special handling for cycles in graph
+      * Disallow duplicate link/stage names? What about cycles?
+      * Process loop limit count for cycles
+      * Switch stage to loop back or move forward
     * Add createExpectedCompletion() to Link/Stage
     * Catch exceptions at top of eval process for test case.
     * Convert MuxLink.input() to return child index.
@@ -14,7 +18,6 @@
     * Rename Link to Stage (or Node or something else)
     * Rename process to eval
     * Rename imput => makePrompt, output => parsePrompt?
-    * Disallow duplicate link/stage names? What about cycles?
     * TODO: fix type cast in processInternal
     * Add `export * from './link7.js';` to lib/core/index.ts
       * Need to get rid of types.ts first

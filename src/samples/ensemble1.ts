@@ -1,3 +1,4 @@
+import z from 'zod';
 import dedent from 'dedent';
 import Handlebars from 'handlebars';
 import {ModelLink, SequenceLink} from '../lib/core/link7.js';
@@ -12,6 +13,10 @@ export const model1: ModelLink<string, number, boolean> = {
   `),
   output: (completion: string) => Number(completion),
   judge: (observed: number, expected: number) => observed === expected,
+  validators: {
+    input: z.string(),
+    output: z.number(),
+  },
 };
 
 export const model2: ModelLink<number, string, boolean> = {
@@ -24,6 +29,10 @@ export const model2: ModelLink<number, string, boolean> = {
   `),
   output: (completion: string) => completion,
   judge: (observed: string, expected: string) => observed === expected,
+  validators: {
+    input: z.number(),
+    output: z.string(),
+  },
 };
 
 export const sequence1: SequenceLink<
@@ -36,6 +45,7 @@ export const sequence1: SequenceLink<
   type: 'sequence',
   left: model1,
   right: model2,
+  validators: {input: z.string(), output: z.string()},
 };
 
 ///////////////////////////////////////////////////////////////////////////////

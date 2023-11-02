@@ -14,6 +14,8 @@
 // This file has a need for the use of lots of generic type parameters of type any.
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import z from 'zod';
+
 import {IAvailableModels} from './models.js';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -33,12 +35,14 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   input: (x: INPUT) => string;
   output: (x: string) => OUTPUT;
   judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
+  validators: Validators<INPUT, OUTPUT>;
 };
 
 export type SequenceLink<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT> = {
   type: 'sequence';
   left: AnyLink<INPUT, MIDDLE> & LEFT;
   right: AnyLink<MIDDLE, OUTPUT> & RIGHT;
+  validators: Validators<INPUT, OUTPUT>;
 };
 
 //
@@ -71,6 +75,12 @@ export type MuxLink<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]> = {
   input: (x: INPUT) => MuxTypes<CHILDREN>[];
   output: (x: MuxOutputUnion<CHILDREN>[]) => OUTPUT;
   children: CHILDREN;
+  validators: Validators<INPUT, OUTPUT>;
+};
+
+export type Validators<INPUT, OUTPUT> = {
+  input: z.ZodType<any, any, INPUT>;
+  output: z.ZodType<any, any, OUTPUT>;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -318,6 +328,49 @@ export async function processMux<
   };
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// Validator
+//
+///////////////////////////////////////////////////////////////////////////////
+export function validator<INPUT, OUTPUT>(
+  link: AnyLink<INPUT, OUTPUT>
+): z.ZodTypeAny {
+  const type = link.type;
+  if (link.type === 'model') {
+    return z.object({
+      type: z.literal('model'),
+      name: z.string(),
+      expected: link.validators.output,
+    });
+  } else if (link.type === 'sequence') {
+    return z.object({
+      type: z.literal('sequence'),
+      left: validator(link.left),
+      right: validator(link.right),
+    });
+  } else if (link.type === 'mux') {
+    return validatorMux(link);
+  } else {
+    throw new Error(`Unknown link type "${type}"`);
+  }
+}
+
+function validatorMux<INPUT, OUTPUT, CHILDREN extends AnyLink<any, any>[]>(
+  link: MuxLink<INPUT, OUTPUT, CHILDREN>
+) {
+  const c = link.children.map(x => validator(x));
+  return z.object({
+    type: z.literal('mux'),
+    children: z.array(z.union(c as any)),
+  });
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Utility functions
+//
+///////////////////////////////////////////////////////////////////////////////
 function verifyTestCaseType(
   testCase: {type: string; name?: string},
   link: {type: string; name?: string}
