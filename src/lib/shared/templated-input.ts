@@ -1,6 +1,16 @@
 import Handlebars from 'handlebars';
 
-export function templatedInput<INPUT, CONTEXT>(promptTemplate: string) {
-  const template = Handlebars.compile(promptTemplate);
-  return (input: INPUT, context: CONTEXT) => template({context, input});
+import {Conversation, Speaker} from '../core/conversation.js';
+
+// Generates an ensemble input function, based on a supplied system prompt
+// and Handlebars template for the user prompt.
+export function templatedInput<INPUT, CONTEXT>(
+  systemPrompt: string,
+  userPromptTemplate: string
+) {
+  const template = Handlebars.compile(userPromptTemplate);
+  return (input: INPUT, context: CONTEXT): Conversation => [
+    {speaker: Speaker.SYSTEM, content: systemPrompt},
+    {speaker: Speaker.USER, content: template({context, input})},
+  ];
 }

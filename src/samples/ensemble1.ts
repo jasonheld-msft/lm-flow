@@ -3,6 +3,7 @@ import dedent from 'dedent';
 
 import {ModelLink, POJO, SequenceLink, templatedInput} from '../lib/index.js';
 
+// Type Context will replace POJO
 // interface Context {
 //   user: string;
 //   date: Date;
@@ -12,10 +13,14 @@ export const model1: ModelLink<string, number, boolean> = {
   type: 'model',
   name: 'model1',
   model: 'model1',
-  input: templatedInput<string, POJO>(dedent`
-    [system] You are an assistant that counts the number of words in the user text prompt.
-    [user] {{input}} {{context.date}}
-  `),
+  input: templatedInput<string, POJO>(
+    dedent`
+      You are an assistant that counts the number of words in the user text prompt.
+    `,
+    dedent`
+      {{input}} {{context.date}}
+    `
+  ),
   output: (completion: string) => Number(completion),
   judge: (observed: number, expected: number) => observed === expected,
   validators: {
@@ -28,10 +33,14 @@ export const model2: ModelLink<number, string, boolean> = {
   type: 'model',
   name: 'model2',
   model: 'model2',
-  input: templatedInput<number, POJO>(dedent`
-    [system] You are an assistant that says hello the number of times specified by the user.
-    [user] {{input}}
-  `),
+  input: templatedInput<number, POJO>(
+    dedent`
+      You are an assistant that says hello the number of times specified by the user.
+    `,
+    dedent`
+      {{input}}
+    `
+  ),
   output: (completion: string) => completion,
   judge: (observed: string, expected: string) => observed === expected,
   validators: {

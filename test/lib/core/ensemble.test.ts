@@ -10,9 +10,10 @@ import {
   process,
   ProcessType,
   SequenceLink,
+  Speaker,
   TestCaseType,
   validator,
-} from '../../../src/lib/index.js';
+} from '../../../src/lib/core/index.js';
 
 describe('Ensembles', () => {
   ///////////////////////////////////////////////////////////////////////////////
@@ -29,7 +30,7 @@ describe('Ensembles', () => {
       type: 'mock',
       name: 'model1',
       config: {
-        exactMatch: true,
+        exactMatch: false,
         defaultResponse: 'error',
         cache: [
           {prompt: 'true', completion: 'This statement is true'},
@@ -41,7 +42,7 @@ describe('Ensembles', () => {
       type: 'mock',
       name: 'model2',
       config: {
-        exactMatch: true,
+        exactMatch: false,
         defaultResponse: 'error',
         cache: [
           {prompt: '22', completion: 'false'},
@@ -55,7 +56,7 @@ describe('Ensembles', () => {
     type: 'model',
     name: 'model1',
     model: 'model1',
-    input: (x: boolean) => String(x),
+    input: (x: boolean) => [{speaker: Speaker.USER, content: String(x)}],
     output: (x: string) => x.length,
     judge: (observed: number, expected: number) => observed === expected,
     validators: {input: z.boolean(), output: z.number()},
@@ -65,7 +66,7 @@ describe('Ensembles', () => {
     type: 'model',
     name: 'model2',
     model: 'model2',
-    input: (x: number) => String(x),
+    input: (x: number) => [{speaker: Speaker.USER, content: String(x)}],
     output: (x: string) => x,
     judge: (observed: string, expected: string) => observed === expected,
     validators: {input: z.number(), output: z.string()},
@@ -126,7 +127,7 @@ describe('Ensembles', () => {
           model: 'model1',
           name: 'model1',
           input: true,
-          prompt: 'true',
+          prompt: [{speaker: Speaker.USER, content: 'true'}],
           completion: 'This statement is true',
           output: 22,
           expected: 5,
@@ -151,7 +152,7 @@ describe('Ensembles', () => {
           model: 'model1',
           name: 'model1',
           input: true,
-          prompt: 'true',
+          prompt: [{speaker: Speaker.USER, content: 'true'}],
           completion: 'This statement is true',
           output: 22,
         };
@@ -177,7 +178,7 @@ describe('Ensembles', () => {
           model: 'model1',
           name: 'model1',
           input: true,
-          prompt: 'true',
+          prompt: [{speaker: Speaker.USER, content: 'true'}],
           completion: 'This statement is true',
           output: 22,
         };
@@ -241,7 +242,7 @@ describe('Ensembles', () => {
             model: 'model1',
             name: 'model1',
             input: false,
-            prompt: 'false',
+            prompt: [{speaker: Speaker.USER, content: 'false'}],
             completion: 'No way',
             output: 6,
             expected: 5,
@@ -252,7 +253,7 @@ describe('Ensembles', () => {
             model: 'model2',
             name: 'model2',
             input: 6,
-            prompt: '6',
+            prompt: [{speaker: Speaker.USER, content: '6'}],
             completion: 'true',
             output: 'true',
             expected: 'hi',
@@ -364,7 +365,7 @@ describe('Ensembles', () => {
               model: 'model1',
               name: 'model1',
               input: true,
-              prompt: 'true',
+              prompt: [{speaker: Speaker.USER, content: 'true'}],
               completion: 'This statement is true',
               output: 22,
               expected: 5,
@@ -375,7 +376,7 @@ describe('Ensembles', () => {
               model: 'model2',
               name: 'model2',
               input: 5,
-              prompt: '5',
+              prompt: [{speaker: Speaker.USER, content: '5'}],
               completion: 'error',
               output: 'error',
               expected: 'hi',
@@ -386,7 +387,7 @@ describe('Ensembles', () => {
               model: 'model1',
               name: 'model1',
               input: false,
-              prompt: 'false',
+              prompt: [{speaker: Speaker.USER, content: 'false'}],
               completion: 'No way',
               output: 6,
               expected: 6,

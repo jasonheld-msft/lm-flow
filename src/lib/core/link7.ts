@@ -18,6 +18,7 @@ import z from 'zod';
 
 import {POJO} from '../shared/index.js';
 
+import {Conversation} from './conversation.js';
 import {IAvailableModels} from './models.js';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,7 +35,7 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   type: 'model';
   name: string;
   model: string;
-  input: (x: INPUT, context: POJO) => string;
+  input: (x: INPUT, context: POJO) => Conversation;
   output: (x: string) => OUTPUT;
   judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
   validators: Validators<INPUT, OUTPUT>;
@@ -178,7 +179,7 @@ type ProcessModelType<LINK> = LINK extends ModelLink<
 >
   ? Pick<LINK, 'type' | 'model' | 'name'> & {
       input: INPUT;
-      prompt: string;
+      prompt: Conversation;
       completion: string;
       output: OUTPUT;
       expected?: OUTPUT;

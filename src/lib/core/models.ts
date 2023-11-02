@@ -3,6 +3,8 @@ import yaml from 'js-yaml';
 import z from 'zod';
 import {generateErrorMessage} from 'zod-error';
 
+import {Conversation} from './conversation.js';
+
 export interface IAvailableModels {
   getModel(stageName: string, defaultModel: string): IModel;
   models(): IterableIterator<IModel>;
@@ -10,7 +12,7 @@ export interface IAvailableModels {
 
 export interface IModel {
   name(): string;
-  complete(prompt: string): Promise<string>;
+  complete(prompt: Conversation): Promise<string>;
   train(): Promise<void>;
   spec(): ModelDefinition;
 }
@@ -110,8 +112,8 @@ export class HelloModel implements IModel {
     return 'hello';
   }
 
-  async complete(prompt: string): Promise<string> {
-    return prompt;
+  async complete(conversation: Conversation): Promise<string> {
+    return toPrompt(conversation);
   }
 
   async train(): Promise<void> {
@@ -135,13 +137,10 @@ export class MockModel implements IModel {
     this._spec = spec;
 
     this.responses = new Map<string, string>(
-      spec.config.cache.map(({prompt, completion}) => {
-        if (spec.config.exactMatch) {
-          return [prompt, completion];
-        } else {
-          return [prompt.toLowerCase(), completion.toLowerCase()];
-        }
-      })
+      spec.config.cache.map(({prompt, completion}) => [
+        spec.config.exactMatch ? prompt : prompt.toLowerCase(),
+        completion,
+      ])
     );
   }
 
@@ -149,7 +148,8 @@ export class MockModel implements IModel {
     return this._spec.name;
   }
 
-  async complete(prompt: string): Promise<string> {
+  async complete(conversation: Conversation): Promise<string> {
+    const prompt = toPrompt(conversation);
     if (this._spec.config.exactMatch) {
       return this.responses.get(prompt) || this._spec.config.defaultResponse;
     } else {
@@ -207,4 +207,10 @@ export function createModel(definition: ModelDefinition): IModel {
         }.`
       );
   }
+}
+
+function toPrompt(conversation: Conversation): string {
+  return conversation
+    .map(turn => `${turn.speaker.toUpperCase()}: ${turn.content}`)
+    .join('\n');
 }

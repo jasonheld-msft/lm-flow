@@ -7,22 +7,11 @@
     * Instructions on creating an ensemble
   * . Install and configure cloc
     * choco install activeperl
-  * Factoring for use as a package
-    * X Application object
-    * x Ability to inject models and ensembles
-    * Ability to configure command-line arguments
-    * Also special folder that is .gitignored
-    * X Stage definition file? - decided not to do this
-    * x Remove pipelines folder
   * links/ensembles
-    * x Remove excess exports from lib/app/index.ts
-    * ILogger.info() should use level parameter.
-    * x Rename test_run_id to testRunId
+    * x Make input() functions and IModel use Conversations (needed for training)
     * Make judge() function async to allow for LLM judgment
       * Example of calling standalone ensemble from judge()
     * Make output() function async to allow for calls to external services
-    * Consider introducing function stage
-    * Make input() functions and IModel use Conversations
     * . Add user context to input() methods of links.
       * template parameter for CONTEXT? (extends POJO)
       * . Add Date type to POJO?
@@ -30,9 +19,11 @@
       * Do we need a validator for Context?
       * X Not sure this makes sense. Just add context to INPUT?
         * X Need context get to multiple models - not just the first.
+    * Consider introducing function stage
     * Convert MuxLink.input() to return child index.
     * Training
       * Add createExpectedCompletion() to Link/Stage
+    * model override flags
     * Catch exceptions at top of eval process for test case.
     * Factor AnyLink/TestCaseType/Process
     * Ensemble folder under lib? types, process, validate, train
@@ -40,13 +31,15 @@
     * Rename process to eval
     * Rename imput => makePrompt, output => parsePrompt?
     * TODO: fix type cast in processInternal
-    * model override flags
+    * ILogger.info() should use level parameter.
     * New zod file loaders
       * x Restore schema validation
       * Will need special handling for cycles in graph
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x Remove excess exports from lib/app/index.ts
+    * x Rename test_run_id to testRunId
     * x Add `export * from './link7.js';` to lib/core/index.ts
       * x Need to get rid of types.ts first
       * x Fix imports in unit tests
@@ -68,6 +61,13 @@
     * x TODO: throw if overwriting test_case_id
     * x Fix prettier configuration after move to pure ESM packages
     * x judge() and expected
+  * Factoring for use as a package
+    * X Application object
+    * x Ability to inject models and ensembles
+    * Ability to configure command-line arguments
+    * Also special folder that is .gitignored
+    * X Stage definition file? - decided not to do this
+    * x Remove pipelines folder
   * iterator symbol for AvailableModels
   * Eliminate concept of stage model override - put in config file?
   * Separate folders for
