@@ -172,7 +172,7 @@ export class MockModel implements IModel {
   }
 }
 
-export function loadModels(filename: string): IAvailableModels {
+export function loadModelFile(filename: string): IModel[] {
   const text = fs.readFileSync(filename, 'utf-8');
   const obj = yaml.load(text);
   const result = ModelDefinitionList.safeParse(obj);
@@ -182,8 +182,7 @@ export function loadModels(filename: string): IAvailableModels {
     throw new Error(errorMessage);
   }
 
-  const models = result.data.map(createModel);
-  return new AvailableModels(models);
+  return result.data.map(createModel);
 }
 
 export function createModel(definition: ModelDefinition): IModel {

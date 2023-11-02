@@ -1,11 +1,18 @@
 #!/usr/bin/env node
 import {program} from 'commander';
 
-import {defaultInputFolder, defaultOutputFolder} from '../../lib/app/index.js';
+import {AnyLink, IModel} from '../core/index.js';
 
-import {clean, evaluate, format, train} from './commands/index.js';
+import {defaultInputFolder, defaultOutputFolder} from './constants.js';
+import {wrap} from './configure2.js';
+import {evaluateInternal2} from '../../apps/eclipse/commands/evaluate.js';
 
-async function main() {
+// import {clean, evaluate, format, train} from './commands/index.js';
+
+export async function main<INPUT, OUTPUT>(
+  ensemble: AnyLink<INPUT, OUTPUT>,
+  additionalModels: IModel[]
+) {
   const concurrancyOption = [
     '-c, --concurrancy <limit>',
     'maximum number of concurrant test case evaluations (default: Infinity)',
@@ -68,37 +75,35 @@ async function main() {
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
-    .action(evaluate);
+    .action(wrap(evaluateInternal2, ensemble, additionalModels));
 
-  program
-    .command('train')
-    .description('Train a multi-model system')
-    .option(...concurrancyOption)
-    .option(...dryrunOption)
-    .option(...envOption)
-    .option(...filterOption)
-    .option(...inputOption)
-    .option(...modelsOption)
-    .option(...openAIKey)
-    .option(...outputOption)
-    .action(train);
+  // program
+  //   .command('train')
+  //   .description('Train a multi-model system')
+  //   .option(...concurrancyOption)
+  //   .option(...dryrunOption)
+  //   .option(...envOption)
+  //   .option(...filterOption)
+  //   .option(...inputOption)
+  //   .option(...modelsOption)
+  //   .option(...openAIKey)
+  //   .option(...outputOption)
+  //   .action(train);
 
-  program
-    .command('format')
-    .description('Format results')
-    .option(...envOption)
-    .option(...outputOption)
-    .action(format);
+  // program
+  //   .command('format')
+  //   .description('Format results')
+  //   .option(...envOption)
+  //   .option(...outputOption)
+  //   .action(format);
 
-  program
-    .command('clean')
-    .description('remove all files from output folder')
-    .option(...envOption)
-    .option(...outputOption)
-    .option('-x, --force', 'do not prompt before removing files')
-    .action(clean);
+  // program
+  //   .command('clean')
+  //   .description('remove all files from output folder')
+  //   .option(...envOption)
+  //   .option(...outputOption)
+  //   .option('-x, --force', 'do not prompt before removing files')
+  //   .action(clean);
 
   await program.parseAsync();
 }
-
-main();

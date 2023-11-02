@@ -2,11 +2,11 @@ import fs from 'fs-extra';
 import yaml from 'js-yaml';
 import pLimit from 'p-limit';
 
+import {AnyLink, process} from '../core/index.js';
 import {pluralize} from '../shared/index.js';
 
 import {Configuration, makeRunlogFilename} from './configure.js';
 import {loadTestCases} from './load-test-cases.js';
-import {AnyLink, process} from './link7.js';
 
 export async function evaluateTestCases<INPUT, OUTPUT>(
   configuration: Configuration,

@@ -43,7 +43,8 @@ export class Logger implements ILogger {
     this.log(LogType.ERROR, message);
   }
 
-  info(message: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  info(message: string, level: number) {
     this.log(LogType.INFO, message);
   }
 

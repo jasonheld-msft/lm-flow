@@ -5,11 +5,19 @@ import os from 'os';
 import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
-import {defaultInputFolder, defaultOutputFolder} from '../shared/constants.js';
-import {ILogger, Logger} from '../shared/logger.js';
-import {SuitePredicate, suitePredicate} from '../shared/suite-predicate.js';
+import {
+  AvailableModels,
+  IAvailableModels,
+  loadModelFile,
+} from '../core/index.js';
+import {
+  ILogger,
+  Logger,
+  SuitePredicate,
+  suitePredicate,
+} from '../shared/index.js';
 
-import {IAvailableModels, loadModels} from './models.js';
+import {defaultInputFolder, defaultOutputFolder} from './constants.js';
 
 export interface Options {
   concurrancy?: string;
@@ -81,7 +89,8 @@ function configure(command: Command, {env}: Options): ILogger {
   try {
     const date = new Date();
     logger.info(
-      `${command.parent!.name()} tool run "${command.name()}" command on ${date}.`
+      `${command.parent!.name()} tool run "${command.name()}" command on ${date}.`,
+      1
     );
     if (env) {
       if (!fs.existsSync(env)) {
@@ -91,12 +100,12 @@ function configure(command: Command, {env}: Options): ILogger {
         if (!status.isFile()) {
           logger.error(`Configuration path "${env}" is not a file.`);
         } else {
-          logger.info(`Configuration from "${env}":`);
+          logger.info(`Configuration from "${env}":`, 1);
           dotenv.config({path: env});
         }
       }
     } else {
-      logger.info('Configuration from default location:');
+      logger.info('Configuration from default location:', 1);
       dotenv.config();
     }
   } catch (e) {
@@ -130,7 +139,8 @@ function validateConfiguration(
 
   const modelsFile =
     options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
-  const models = loadModels(modelsFile);
+  const modelsFromFile = loadModelFile(modelsFile);
+  const models = new AvailableModels(modelsFromFile);
 
   const openAIKey = options.key || process.env.OPENAI_KEY;
 

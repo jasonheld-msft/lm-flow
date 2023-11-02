@@ -1,4 +1,3 @@
-export * from './constants.js';
 export * from './logger.js';
 export * from './peekable-sequence.js';
 export * from './pojo.js';

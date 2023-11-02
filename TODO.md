@@ -8,13 +8,15 @@
   * . Install and configure cloc
     * choco install activeperl
   * Factoring for use as a package
-    * Application object
-      * Ability to inject models and ensembles
+    * X Application object
+    * . Ability to inject models and ensembles
     * Ability to configure command-line arguments
     * Also special folder that is .gitignored
     * X Stage definition file? - decided not to do this
     * x Remove pipelines folder
   * links/ensembles
+    * Remove excess exports from lib/app/index.ts
+    * ILogger.info() should use level parameter.
     * x Rename test_run_id to testRunId
     * Make judge() function async to allow for LLM judgment
       * Example of calling standalone ensemble from judge()

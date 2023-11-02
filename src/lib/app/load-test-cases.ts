@@ -6,10 +6,10 @@ import pLimit from 'p-limit';
 import z from 'zod';
 import {generateErrorMessage} from 'zod-error';
 
+import {AnyLink, TestCase, validator} from '../core/index.js';
 import {filesFromFolder} from '../shared/index.js';
 
 import {Configuration} from './configure.js';
-import {AnyLink, TestCase, validator} from './link7.js';
 
 export async function loadTestCases<INPUT, OUTPUT>(
   configuration: Configuration,

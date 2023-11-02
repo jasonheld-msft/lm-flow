@@ -4,12 +4,12 @@ import path from 'path';
 import prompt from 'prompt-sync';
 import {rimraf} from 'rimraf';
 
+import {Configuration, wrapper} from '../../../lib/app/index.js';
 import {
   ILogger,
   filesFromFolder,
   pluralize,
 } from '../../../lib/shared/index.js';
-import {Configuration, wrapper} from '../../../lib/core/index.js';
 
 export interface CleanOptions {
   dryrun?: boolean;
