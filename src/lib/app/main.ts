@@ -3,9 +3,12 @@ import {program} from 'commander';
 
 import {AnyLink, IModel} from '../core/index.js';
 
+import {clean} from './clean.js';
+import {wrap} from './configure.js';
 import {defaultInputFolder, defaultOutputFolder} from './constants.js';
-import {wrap} from './configure2.js';
-import {evaluateInternal2} from '../../apps/eclipse/commands/evaluate.js';
+import {evaluate} from './evaluator.js';
+import {format} from './format.js';
+import {train} from './train.js';
 
 // import {clean, evaluate, format, train} from './commands/index.js';
 
@@ -75,35 +78,35 @@ export async function main<INPUT, OUTPUT>(
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
-    .action(wrap(evaluateInternal2, ensemble, additionalModels));
+    .action(wrap(evaluate, ensemble, additionalModels));
 
-  // program
-  //   .command('train')
-  //   .description('Train a multi-model system')
-  //   .option(...concurrancyOption)
-  //   .option(...dryrunOption)
-  //   .option(...envOption)
-  //   .option(...filterOption)
-  //   .option(...inputOption)
-  //   .option(...modelsOption)
-  //   .option(...openAIKey)
-  //   .option(...outputOption)
-  //   .action(train);
+  program
+    .command('train')
+    .description('Train a multi-model system')
+    .option(...concurrancyOption)
+    .option(...dryrunOption)
+    .option(...envOption)
+    .option(...filterOption)
+    .option(...inputOption)
+    .option(...modelsOption)
+    .option(...openAIKey)
+    .option(...outputOption)
+    .action(wrap(train, ensemble, additionalModels));
 
-  // program
-  //   .command('format')
-  //   .description('Format results')
-  //   .option(...envOption)
-  //   .option(...outputOption)
-  //   .action(format);
+  program
+    .command('format')
+    .description('Format results')
+    .option(...envOption)
+    .option(...outputOption)
+    .action(wrap(format, ensemble, additionalModels));
 
-  // program
-  //   .command('clean')
-  //   .description('remove all files from output folder')
-  //   .option(...envOption)
-  //   .option(...outputOption)
-  //   .option('-x, --force', 'do not prompt before removing files')
-  //   .action(clean);
+  program
+    .command('clean')
+    .description('remove all files from output folder')
+    .option(...envOption)
+    .option(...outputOption)
+    .option('-x, --force', 'do not prompt before removing files')
+    .action(wrap(clean, ensemble, additionalModels));
 
   await program.parseAsync();
 }

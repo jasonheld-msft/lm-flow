@@ -6,8 +6,10 @@ import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
 import {
+  AnyLink,
   AvailableModels,
   IAvailableModels,
+  IModel,
   loadModelFile,
 } from '../core/index.js';
 import {
@@ -18,18 +20,6 @@ import {
 } from '../shared/index.js';
 
 import {defaultInputFolder, defaultOutputFolder} from './constants.js';
-
-export interface Options {
-  concurrancy?: string;
-  dryrun?: boolean;
-  env?: string;
-  filter?: string;
-  input?: string;
-  key?: string;
-  logFile?: string;
-  models?: string;
-  output?: string;
-}
 
 export interface Configuration {
   cmd: string;
@@ -49,79 +39,99 @@ export interface Configuration {
   user: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function wrapper<T extends {[key: string]: any}>(
+// Wrapper to produce Commander action function that
+// captures ensemble and additionalModels.
+export function wrap<
+  INPUT,
+  OUTPUT,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  OPTIONS extends {[key: string]: any}
+>(
   f: (
-    logger: ILogger,
     configuration: Configuration,
-    options: T
+    ensemble: AnyLink<INPUT, OUTPUT>,
+    options: OPTIONS
   ) => Promise<void>,
-  command: Command,
-  options: T
-): Promise<void> {
-  const logger = configure(command, options);
+  ensemble: AnyLink<INPUT, OUTPUT>,
+  additionalModels: IModel[]
+): (this: Command, options: OPTIONS) => Promise<void> {
+  // NOTE: cannot use an arrow function here because of the this: parameter.
+  async function wrapper(this: Command, options: OPTIONS) {
+    const logger = new Logger();
 
-  try {
-    if (!logger.hasErrors()) {
-      const configuration = validateConfiguration(logger, options);
-      if (!logger.hasErrors()) {
-        logger.info('', 1);
-        await f(logger, configuration, options);
-        logger.info('', 1);
-      }
-    }
-  } catch (e) {
-    if (e instanceof Error) {
-      logger.error(e.message);
-    }
-  } finally {
-    console.log(logger.format());
-    if (logger.hasErrors()) {
-      logger.info('Command aborted.', 1);
-      // eslint-disable-next-line no-process-exit
-      process.exit(1);
-    }
-  }
-}
-
-function configure(command: Command, {env}: Options): ILogger {
-  const logger = new Logger();
-  try {
     const date = new Date();
     logger.info(
-      `${command.parent!.name()} tool run "${command.name()}" command on ${date}.`,
+      `${this.parent!.name()} tool run "${this.name()}" command on ${date}.`,
       1
     );
-    if (env) {
-      if (!fs.existsSync(env)) {
-        logger.error(`Cannot find configuration file "${env}".`);
-      } else {
-        const status = fs.statSync(env);
-        if (!status.isFile()) {
-          logger.error(`Configuration path "${env}" is not a file.`);
-        } else {
-          logger.info(`Configuration from "${env}":`, 1);
-          dotenv.config({path: env});
+
+    try {
+      configureEnvironmentVariables(logger, options.env);
+      if (!logger.hasErrors()) {
+        const configuration = createConfiguration(
+          logger,
+          options,
+          additionalModels
+        );
+        if (!logger.hasErrors()) {
+          logger.info('', 1);
+          await f(configuration, ensemble, options);
+          logger.info('', 1);
         }
       }
-    } else {
-      logger.info('Configuration from default location:', 1);
-      dotenv.config();
-    }
-  } catch (e) {
-    if (e instanceof Error) {
-      logger.error(e.message);
-    } else {
-      logger.error('Unknown error during configuration.');
+    } catch (e) {
+      if (e instanceof Error) {
+        logger.error(e.message);
+      } else {
+        logger.error('Unknown error during configuration.');
+      }
+    } finally {
+      console.log(logger.format());
+      if (logger.hasErrors()) {
+        logger.info('Command aborted.', 1);
+        // eslint-disable-next-line no-process-exit
+        process.exit(1);
+      }
     }
   }
-
-  return logger;
+  return wrapper;
 }
 
-function validateConfiguration(
+function configureEnvironmentVariables(logger: ILogger, env?: string) {
+  if (env) {
+    if (!fs.existsSync(env)) {
+      logger.error(`Cannot find configuration file "${env}".`);
+    } else {
+      const status = fs.statSync(env);
+      if (!status.isFile()) {
+        logger.error(`Configuration path "${env}" is not a file.`);
+      } else {
+        logger.info(`Configuration from "${env}":`, 1);
+        dotenv.config({path: env});
+      }
+    }
+  } else {
+    logger.info('Configuration from default location:', 1);
+    dotenv.config();
+  }
+}
+
+export interface GeneralOptions {
+  concurrancy?: string;
+  dryrun?: boolean;
+  env?: string;
+  filter?: string;
+  input?: string;
+  key?: string;
+  logFile?: string;
+  models?: string;
+  output?: string;
+}
+
+function createConfiguration(
   logger: ILogger,
-  options: Options
+  options: GeneralOptions,
+  additionalModels: IModel[]
 ): Configuration {
   const cmd = process.argv.join(' ');
   const cwd = process.cwd();
@@ -140,7 +150,7 @@ function validateConfiguration(
   const modelsFile =
     options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
   const modelsFromFile = loadModelFile(modelsFile);
-  const models = new AvailableModels(modelsFromFile);
+  const models = new AvailableModels([...modelsFromFile, ...additionalModels]);
 
   const openAIKey = options.key || process.env.OPENAI_KEY;
 

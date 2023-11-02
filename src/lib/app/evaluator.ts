@@ -8,9 +8,19 @@ import {pluralize} from '../shared/index.js';
 import {Configuration, makeRunlogFilename} from './configure.js';
 import {loadTestCases} from './load-test-cases.js';
 
-export async function evaluateTestCases<INPUT, OUTPUT>(
+export interface EvaluateOptions {
+  concurrancy?: number;
+  dryrun?: boolean;
+  env?: string;
+  filter?: string;
+  models?: string;
+}
+
+export async function evaluate<INPUT, OUTPUT>(
   configuration: Configuration,
-  ensemble: AnyLink<INPUT, OUTPUT>
+  ensemble: AnyLink<INPUT, OUTPUT>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  options: EvaluateOptions
 ) {
   const logger = configuration.logger;
   const testCases = await loadTestCases(configuration, ensemble);

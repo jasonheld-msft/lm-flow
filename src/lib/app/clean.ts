@@ -1,15 +1,11 @@
-import {Command} from 'commander';
 import fs from 'fs-extra';
 import path from 'path';
 import prompt from 'prompt-sync';
 import {rimraf} from 'rimraf';
 
-import {Configuration, wrapper} from '../../../lib/app/index.js';
-import {
-  ILogger,
-  filesFromFolder,
-  pluralize,
-} from '../../../lib/shared/index.js';
+import {Configuration} from './configure.js';
+import {filesFromFolder, pluralize} from '../shared/index.js';
+import {AnyLink} from '../index.js';
 
 export interface CleanOptions {
   dryrun?: boolean;
@@ -17,15 +13,14 @@ export interface CleanOptions {
   force?: boolean;
 }
 
-export async function clean(this: Command, options: CleanOptions) {
-  wrapper(cleanInternal, this, options);
-}
-
-async function cleanInternal(
-  logger: ILogger,
+export async function clean(
   configuration: Configuration,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ensemble: AnyLink<any, any>,
   options: CleanOptions
 ) {
+  console.log('------------------------------');
+  const logger = configuration.logger;
   const outputFolder = path.resolve(configuration.outputFolder);
 
   let requireConfirmation = !options.force;

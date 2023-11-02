@@ -11,23 +11,9 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/build/src/apps/eclipse/main.js",
+      "program": "${workspaceFolder}/build/src/samples/main.js",
       "args": ["eval"],
       "xargs": ["eval", "-o", "foo", "-k", "123"],
-      "preLaunchTask": "tsc: build - tsconfig.json",
-      "outFiles": [
-        "${workspaceFolder}/build/**/*.js"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "example",
-      "skipFiles": [
-        "<node_internals>/**"
-      ],
-      "program": "${workspaceFolder}/build/src/lib/pipelines/example.js",
-      "args": ["eval", "-o", "foo", "-k", "123"],
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": [
         "${workspaceFolder}/build/**/*.js"
