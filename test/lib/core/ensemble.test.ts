@@ -20,6 +20,10 @@ describe('Ensembles', () => {
   //  Processing
   //
   ///////////////////////////////////////////////////////////////////////////////
+  const context = {
+    user: 'user1',
+  };
+
   const models = new AvailableModels([
     createModel({
       type: 'mock',
@@ -114,6 +118,7 @@ describe('Ensembles', () => {
           models,
           model1,
           true,
+          context,
           expectedValues
         );
         const expectedResult: ProcessType<typeof model1> = {
@@ -138,6 +143,7 @@ describe('Ensembles', () => {
           models,
           model1,
           true,
+          context,
           expectedValues
         );
         const expectedResult: ProcessType<typeof model1> = {
@@ -163,6 +169,7 @@ describe('Ensembles', () => {
           models,
           model1NoJudge,
           true,
+          context,
           expectedValues
         );
         const expectedResult: ProcessType<typeof model1> = {
@@ -222,6 +229,7 @@ describe('Ensembles', () => {
           models,
           sequence1,
           false,
+          context,
           expectedValues
         );
 
@@ -336,7 +344,13 @@ describe('Ensembles', () => {
           expected: 'number, string, number',
         };
 
-        const observedResult = await process(models, mux1, 3, expectedValues);
+        const observedResult = await process(
+          models,
+          mux1,
+          3,
+          context,
+          expectedValues
+        );
 
         // TODO: figure out why ProcessType<typeof mux1> gives the wrong type.
         const expectedResult: ProcessType<typeof mux1> = {

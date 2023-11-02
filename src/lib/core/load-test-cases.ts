@@ -27,6 +27,7 @@ export async function loadTestCases<INPUT, OUTPUT>(
     tags: z.array(z.string()).optional(),
     input: ensemble.validators.input,
     expected: validator(ensemble),
+    context: z.any(),
   });
 
   // Walk input folder getting test case files.

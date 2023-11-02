@@ -8,13 +8,26 @@
   * . Install and configure cloc
     * choco install activeperl
   * Factoring for use as a package
-    * Ability to inject models and ensembles
+    * Application object
+      * Ability to inject models and ensembles
     * Ability to configure command-line arguments
     * Also special folder that is .gitignored
     * X Stage definition file? - decided not to do this
     * x Remove pipelines folder
   * links/ensembles
-    * Add user context to input() methods of links.
+    * Rename test_run_id
+    * Make judge() function async to allow for LLM judgment
+      * Example of calling standalone ensemble from judge()
+    * Make output() function async to allow for calls to external services
+    * Consider introducing function stage
+    * Make input() functions and IModel use Conversations
+    * . Add user context to input() methods of links.
+      * template parameter for CONTEXT? (extends POJO)
+      * . Add Date type to POJO?
+      * Pass Context | undefined?
+      * Do we need a validator for Context?
+      * X Not sure this makes sense. Just add context to INPUT?
+        * X Need context get to multiple models - not just the first.
     * Convert MuxLink.input() to return child index.
     * Training
       * Add createExpectedCompletion() to Link/Stage

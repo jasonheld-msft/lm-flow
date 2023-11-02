@@ -16,6 +16,8 @@
 
 import z from 'zod';
 
+import {POJO} from '../shared/index.js';
+
 import {IAvailableModels} from './models.js';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,7 +34,7 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   type: 'model';
   name: string;
   model: string;
-  input: (x: INPUT) => string;
+  input: (x: INPUT, context: POJO) => string;
   output: (x: string) => OUTPUT;
   judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
   validators: Validators<INPUT, OUTPUT>;
@@ -49,26 +51,6 @@ export type SequenceLink<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT> = {
 //
 // MuxLink
 //
-
-// The union of types of Links in a tuple.
-export type MuxTypes<T> = T extends readonly [
-  AnyLink<infer INPUT, infer OUTPUT>,
-  ...infer Tail
-]
-  ? {input: INPUT; link: AnyLink<INPUT, OUTPUT>} | MuxTypes<Tail>
-  : never;
-
-// The union of OUTPUT types of Links in a tuple.
-export type MuxOutputUnion<T> = T extends readonly [
-  AnyLink<any, infer OUTPUT>,
-  ...infer Tail
-]
-  ? OUTPUT | MuxOutputUnion<Tail>
-  : never;
-
-export type MuxOutputTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
-  ? ProcessType<HEAD> | MuxOutputTypes<TAIL>
-  : never;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MuxLink<
@@ -90,16 +72,37 @@ export type Validators<INPUT, OUTPUT> = {
   output: z.ZodType<any, any, OUTPUT>;
 };
 
+// The union of types of Links in a tuple.
+export type MuxTypes<T> = T extends readonly [
+  AnyLink<infer INPUT, infer OUTPUT>,
+  ...infer Tail
+]
+  ? {input: INPUT; link: AnyLink<INPUT, OUTPUT>} | MuxTypes<Tail>
+  : never;
+
+// The union of OUTPUT types of Links in a tuple.
+export type MuxOutputUnion<T> = T extends readonly [
+  AnyLink<any, infer OUTPUT>,
+  ...infer Tail
+]
+  ? OUTPUT | MuxOutputUnion<Tail>
+  : never;
+
+export type MuxOutputTypes<T> = T extends readonly [infer HEAD, ...infer TAIL]
+  ? ProcessType<HEAD> | MuxOutputTypes<TAIL>
+  : never;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TestCase
 //
 ///////////////////////////////////////////////////////////////////////////////
 export interface TestCase<T extends AnyLink<any, any>> {
-  test_case_id: string;
+  testCaseId: string;
   tags?: string[];
   sha: string;
   input: ExtractInput<T>;
+  context: POJO;
   expected: TestCaseType<T>;
 }
 
@@ -234,6 +237,7 @@ export async function process<T>(
   models: IAvailableModels,
   link: T,
   input: ExtractInput<T>,
+  context: POJO,
   testCase: TestCaseType<T>
 ): Promise<ProcessType<T>> {
   // TODO: remove the following type assertion to any
@@ -241,6 +245,7 @@ export async function process<T>(
     models,
     link as unknown as MakeLink<T>,
     input,
+    context,
     testCase
   ) as any;
 }
@@ -249,16 +254,17 @@ export async function processInternal<INPUT, OUTPUT>(
   models: IAvailableModels,
   link: AnyLink<INPUT, OUTPUT>,
   input: INPUT,
+  context: POJO,
   // TODO: fix type cast in processInternal
   testCase: any // TestCaseType<AnyLink<INPUT, OUTPUT>>
 ): Promise<ProcessType<typeof link>> {
   const type = link.type;
   if (link.type === 'model') {
-    return processModel(models, link, input, testCase);
+    return processModel(models, link, input, context, testCase);
   } else if (link.type === 'sequence') {
-    return processSequence(models, link, input, testCase);
+    return processSequence(models, link, input, context, testCase);
   } else if (link.type === 'mux') {
-    return processMux(models, link, input, testCase);
+    return processMux(models, link, input, context, testCase);
   } else {
     throw new Error(`Unknown link type "${type}"`);
   }
@@ -268,12 +274,13 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   models: IAvailableModels,
   link: ModelLink<INPUT, OUTPUT, JUDGMENT>,
   input: INPUT,
+  context: POJO,
   testCase: TestCaseType<ModelLink<INPUT, OUTPUT, JUDGMENT>>
 ) {
   verifyTestCaseType(testCase, link);
   const {type, model, name, judge} = link;
   const {expected} = testCase;
-  const prompt = link.input(input);
+  const prompt = link.input(input, context);
   const modelAPI = models.getModel(name, model);
   const completion = await modelAPI.complete(prompt);
   const output = link.output(completion);
@@ -295,6 +302,7 @@ async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT>(
   models: IAvailableModels,
   link: SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT, JUDGMENT>,
   input: INPUT,
+  context: POJO,
   testCase: TestCaseType<
     SequenceLink<INPUT, MIDDLE, OUTPUT, LEFT, RIGHT, JUDGMENT>
   >
@@ -302,11 +310,18 @@ async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT>(
   verifyTestCaseType(testCase, link);
   const {type, judge} = link;
   const {expected} = testCase;
-  const left = await processInternal(models, link.left, input, testCase.left);
+  const left = await processInternal(
+    models,
+    link.left,
+    input,
+    context,
+    testCase.left
+  );
   const right = await processInternal(
     models,
     link.right,
     left.output,
+    context,
     testCase.right
   );
   const output = right.output;
@@ -325,6 +340,7 @@ export async function processMux<
   models: IAvailableModels,
   link: MuxLink<INPUT, OUTPUT, CHILDREN, JUDGMENT>,
   input: INPUT,
+  context: POJO,
   testCase: TestCaseMuxType<MuxLink<any, any, CHILDREN, JUDGMENT>>
 ) {
   verifyTestCaseType(testCase, link);
@@ -332,7 +348,9 @@ export async function processMux<
   const {expected} = testCase;
   const promises = link
     .input(input)
-    .map((x, i) => process(models, x.link, x.input, testCase.children[i]));
+    .map((x, i) =>
+      process(models, x.link, x.input, context, testCase.children[i])
+    );
   const children = await Promise.all(promises);
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any

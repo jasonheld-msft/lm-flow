@@ -1,15 +1,20 @@
 import z from 'zod';
 import dedent from 'dedent';
-import Handlebars from 'handlebars';
-import {ModelLink, SequenceLink} from '../lib/index.js';
+
+import {ModelLink, POJO, SequenceLink, templatedInput} from '../lib/index.js';
+
+// interface Context {
+//   user: string;
+//   date: Date;
+// }
 
 export const model1: ModelLink<string, number, boolean> = {
   type: 'model',
   name: 'model1',
   model: 'model1',
-  input: templatedInput<string>(dedent`
+  input: templatedInput<string, POJO>(dedent`
     [system] You are an assistant that counts the number of words in the user text prompt.
-    [user] {{input}}
+    [user] {{input}} {{context.date}}
   `),
   output: (completion: string) => Number(completion),
   judge: (observed: number, expected: number) => observed === expected,
@@ -23,7 +28,7 @@ export const model2: ModelLink<number, string, boolean> = {
   type: 'model',
   name: 'model2',
   model: 'model2',
-  input: templatedInput<number>(dedent`
+  input: templatedInput<number, POJO>(dedent`
     [system] You are an assistant that says hello the number of times specified by the user.
     [user] {{input}}
   `),
@@ -48,9 +53,3 @@ export const sequence1: SequenceLink<
   right: model2,
   validators: {input: z.string(), output: z.string()},
 };
-
-///////////////////////////////////////////////////////////////////////////////
-function templatedInput<T>(promptTemplate: string) {
-  const template = Handlebars.compile(promptTemplate);
-  return (input: T) => template({input});
-}

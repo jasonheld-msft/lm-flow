@@ -2,6 +2,8 @@ import fs from 'fs-extra';
 import yaml from 'js-yaml';
 import pLimit from 'p-limit';
 
+import {pluralize} from '../shared/index.js';
+
 import {Configuration, makeRunlogFilename} from './configure.js';
 import {loadTestCases} from './load-test-cases.js';
 import {AnyLink, process} from './link7.js';
@@ -22,22 +24,36 @@ export async function evaluateTestCases<INPUT, OUTPUT>(
           configuration.models,
           ensemble,
           testCase.input,
+          testCase.context,
           testCase.expected
         )
       )
     )
   );
 
+  logger.info(
+    `Processed ${logs.length} test ${pluralize(logs.length, 'case', 'cases')}`,
+    1
+  );
+
   // Add ids and SHAs to test case logs.
   const cases = logs.map((log, i) => {
-    const {test_case_id, sha} = testCases[i];
-    return {test_case_id, sha, log};
+    const {testCaseId, sha, context} = testCases[i];
+    return {testCaseId, sha, context, log};
   });
 
   const {cmd, cwd, test_run_id, user} = configuration;
   const timestamp = configuration.timestamp;
   const models = [...configuration.models.models()].map(m => m.spec());
-  const runLog = {test_run_id, cmd, cwd, timestamp, user, models, cases};
+  const runLog = {
+    testRunId: test_run_id,
+    cmd,
+    cwd,
+    timestamp,
+    user,
+    models,
+    cases,
+  };
 
   // Serialize run log to disk.
   const text = yaml.dump(runLog);
@@ -51,5 +67,5 @@ export async function evaluateTestCases<INPUT, OUTPUT>(
     await fs.ensureFile(outfile);
     fs.writeFile(outfile, text, {encoding: 'utf8'});
   }
-  logger.info('finished', 1);
+  logger.info('Completed evaluation run.', 1);
 }
