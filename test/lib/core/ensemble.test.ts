@@ -57,8 +57,8 @@ describe('Ensembles', () => {
     name: 'model1',
     model: 'model1',
     input: (x: boolean) => [{speaker: Speaker.USER, content: String(x)}],
-    output: (x: string) => x.length,
-    judge: (observed: number, expected: number) => observed === expected,
+    output: async (x: string) => x.length,
+    judge: async (observed: number, expected: number) => observed === expected,
     validators: {input: z.boolean(), output: z.number()},
   };
 
@@ -67,8 +67,8 @@ describe('Ensembles', () => {
     name: 'model2',
     model: 'model2',
     input: (x: number) => [{speaker: Speaker.USER, content: String(x)}],
-    output: (x: string) => x,
-    judge: (observed: string, expected: string) => observed === expected,
+    output: async (x: string) => x,
+    judge: async (observed: string, expected: string) => observed === expected,
     validators: {input: z.number(), output: z.string()},
   };
 
@@ -96,7 +96,7 @@ describe('Ensembles', () => {
         {input: 5, link: model2},
         {input: false, link: model1},
       ],
-      output: (x: (number | string)[]) => x.map(y => typeof y).join(', '),
+      output: async (x: (number | string)[]) => x.map(y => typeof y).join(', '),
       children: [model1, model2],
       judge: (observed: string, expected: string) => observed === expected,
       validators: {input: z.number(), output: z.string()},

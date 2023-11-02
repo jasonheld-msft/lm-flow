@@ -36,8 +36,8 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   name: string;
   model: string;
   input: (x: INPUT, context: POJO) => Conversation;
-  output: (x: string) => OUTPUT;
-  judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
+  output: (x: string) => Promise<OUTPUT>;
+  judge?: (observed: OUTPUT, expected: OUTPUT) => Promise<JUDGMENT>;
   validators: Validators<INPUT, OUTPUT>;
 };
 
@@ -62,7 +62,7 @@ export type MuxLink<
 > = {
   type: 'mux';
   input: (x: INPUT) => MuxTypes<CHILDREN>[];
-  output: (x: MuxOutputUnion<CHILDREN>[]) => OUTPUT;
+  output: (x: MuxOutputUnion<CHILDREN>[]) => Promise<OUTPUT>;
   children: CHILDREN;
   judge?: (observed: OUTPUT, expected: OUTPUT) => JUDGMENT;
   validators: Validators<INPUT, OUTPUT>;
@@ -284,8 +284,9 @@ async function processModel<INPUT, OUTPUT, JUDGMENT>(
   const prompt = link.input(input, context);
   const modelAPI = models.getModel(name, model);
   const completion = await modelAPI.complete(prompt);
-  const output = link.output(completion);
-  const judgment = judge && expected ? judge(output, expected) : undefined;
+  const output = await link.output(completion);
+  const judgment =
+    judge && expected ? await judge(output, expected) : undefined;
   const optionals = judge && expected ? {judgment, expected} : {};
   return {
     type,
@@ -326,7 +327,8 @@ async function processSequence<INPUT, OUTPUT, MIDDLE, LEFT, RIGHT, JUDGMENT>(
     testCase.right
   );
   const output = right.output;
-  const judgment = judge && expected ? judge(output, expected) : undefined;
+  const judgment =
+    judge && expected ? await judge(output, expected) : undefined;
   const optionals = judge && expected ? {judgment, expected} : {};
   return {type, input, left, right, output, ...optionals};
 }
@@ -355,8 +357,9 @@ export async function processMux<
   const children = await Promise.all(promises);
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any
-  const output = link.output(outputs as any);
-  const judgment = judge && expected ? judge(output, expected) : undefined;
+  const output = await link.output(outputs as any);
+  const judgment =
+    judge && expected ? await judge(output, expected) : undefined;
   const optionals = judge && expected ? {judgment, expected} : {};
   // TODO: remove the following type assertion to MuxOutputTypes<CHILDREN>[]
   return {

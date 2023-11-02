@@ -4,14 +4,12 @@
     * Conceptual explanation
       * More compelling example
       * Diagram matching example
+      * judge() function async to allow for LLM judgment
+      * output() function async to allow for calls to external services
     * Instructions on creating an ensemble
   * . Install and configure cloc
     * choco install activeperl
   * links/ensembles
-    * x Make input() functions and IModel use Conversations (needed for training)
-    * Make judge() function async to allow for LLM judgment
-      * Example of calling standalone ensemble from judge()
-    * Make output() function async to allow for calls to external services
     * . Add user context to input() methods of links.
       * template parameter for CONTEXT? (extends POJO)
       * . Add Date type to POJO?
@@ -38,6 +36,10 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x Make input() functions and IModel use Conversations (needed for training)
+    * x Make judge() function async to allow for LLM judgment
+      * x Example of calling standalone ensemble from judge()
+    * x Make output() function async to allow for calls to external services
     * x Remove excess exports from lib/app/index.ts
     * x Rename test_run_id to testRunId
     * x Add `export * from './link7.js';` to lib/core/index.ts

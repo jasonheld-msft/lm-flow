@@ -21,8 +21,8 @@ export const model1: ModelLink<string, number, boolean> = {
       {{input}} {{context.date}}
     `
   ),
-  output: (completion: string) => Number(completion),
-  judge: (observed: number, expected: number) => observed === expected,
+  output: async (completion: string) => Number(completion),
+  judge: async (observed: number, expected: number) => observed === expected,
   validators: {
     input: z.string(),
     output: z.number(),
@@ -41,8 +41,8 @@ export const model2: ModelLink<number, string, boolean> = {
       {{input}}
     `
   ),
-  output: (completion: string) => completion,
-  judge: (observed: string, expected: string) => observed === expected,
+  output: async (completion: string) => completion,
+  judge: async (observed: string, expected: string) => observed === expected,
   validators: {
     input: z.number(),
     output: z.string(),
