@@ -27,19 +27,10 @@ export type OpenAIModelDefinition = z.infer<typeof OpenAIModelDefinition>;
 
 export class OpenAIModel implements IModel {
   specification: OpenAIModelDefinition;
-  model: TypeChatLanguageModel;
+  model?: TypeChatLanguageModel;
 
   constructor(spec: OpenAIModelDefinition) {
     this.specification = spec;
-
-    const env = process.env;
-    const apiKey =
-      env[openai_api_key] ?? missingEnvironmentVariable(openai_api_key);
-    const model = spec.config.model;
-    const endPoint = env[openai_endpoint] ?? default_openai_endpoint;
-    const org = env[openai_organization] ?? '';
-
-    this.model = createOpenAILanguageModel(apiKey, model, endPoint, org);
   }
 
   name() {
@@ -51,7 +42,8 @@ export class OpenAIModel implements IModel {
   }
 
   async complete(conversation: Conversation): Promise<string> {
-    const result = await this.model.complete(conversation);
+    const model = this.lazyCreateTypeChatModel();
+    const result = await model.complete(conversation);
     if (!result.success) {
       throw new Error(`${result.message}`);
     }
@@ -60,5 +52,19 @@ export class OpenAIModel implements IModel {
 
   train(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  private lazyCreateTypeChatModel() {
+    if (!this.model) {
+      const env = process.env;
+      const apiKey =
+        env[openai_api_key] ?? missingEnvironmentVariable(openai_api_key);
+      const model = this.specification.config.model;
+      const endPoint = env[openai_endpoint] ?? default_openai_endpoint;
+      const org = env[openai_organization] ?? '';
+
+      this.model = createOpenAILanguageModel(apiKey, model, endPoint, org);
+    }
+    return this.model;
   }
 }

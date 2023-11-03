@@ -2,7 +2,8 @@
     * NPM
       * x Minimal README.md
       * x Test in dev container
-      * Fix mocha test explorer in dev container
+      * x Fix mocha test explorer in dev container
+      * x Cannot find configuration file "./.env". when no .env file.
       * rename/create new model-flow repo
       * delete all but readme from this repo
       * rename package to model-flow

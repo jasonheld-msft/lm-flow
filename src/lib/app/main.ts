@@ -35,8 +35,7 @@ export async function main<INPUT, OUTPUT>(
 
   const envOption = [
     '-e, --env <path>',
-    'path to environment file',
-    `${defaultEnvFile}`,
+    `path to environment file (defaults to ${defaultEnvFile})`,
   ] as const;
 
   const filterOption = [

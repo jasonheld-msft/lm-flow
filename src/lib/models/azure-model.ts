@@ -21,20 +21,10 @@ export type AzureModelDefinition = z.infer<typeof AzureModelDefinition>;
 
 export class AzureModel implements IModel {
   specification: AzureModelDefinition;
-  model: TypeChatLanguageModel;
+  model?: TypeChatLanguageModel;
 
   constructor(spec: AzureModelDefinition) {
     this.specification = spec;
-
-    const env = process.env;
-    const apiKey =
-      env[azure_openai_api_key] ??
-      missingEnvironmentVariable(azure_openai_api_key);
-    const endPoint =
-      env[azure_openai_endpoint] ??
-      missingEnvironmentVariable(azure_openai_endpoint);
-
-    this.model = createAzureOpenAILanguageModel(apiKey, endPoint);
   }
 
   name() {
@@ -46,7 +36,8 @@ export class AzureModel implements IModel {
   }
 
   async complete(conversation: Conversation): Promise<string> {
-    const result = await this.model.complete(conversation);
+    const model = this.lazyCreateTypeChatModel();
+    const result = await model.complete(conversation);
     if (!result.success) {
       throw new Error(`${result.message}`);
     }
@@ -55,5 +46,20 @@ export class AzureModel implements IModel {
 
   train(): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  private lazyCreateTypeChatModel() {
+    if (!this.model) {
+      const env = process.env;
+      const apiKey =
+        env[azure_openai_api_key] ??
+        missingEnvironmentVariable(azure_openai_api_key);
+      const endPoint =
+        env[azure_openai_endpoint] ??
+        missingEnvironmentVariable(azure_openai_endpoint);
+
+      this.model = createAzureOpenAILanguageModel(apiKey, endPoint);
+    }
+    return this.model;
   }
 }
