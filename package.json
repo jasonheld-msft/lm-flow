@@ -1,5 +1,5 @@
 {
-  "name": "@hopcroft/model-flow",
+  "name": "lm-flow",
   "version": "0.0.2",
   "description": "LLM training and evaluation tool",
   "type": "module",
