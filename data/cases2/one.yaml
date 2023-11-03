@@ -1,0 +1,9 @@
+tags: [one]
+input: Hello, world
+context:
+  user: user1
+  date: 2023-11-01T23:12:40.452Z
+expected:
+  type: 'model'
+  name: 'openai'
+  expected: 2

@@ -1,6 +1,6 @@
 import Handlebars from 'handlebars';
 
-import {Conversation, Speaker} from '../core/conversation.js';
+import {Conversation, Speaker} from '../models/conversation.js';
 
 // Generates an ensemble input function, based on a supplied system prompt
 // and Handlebars template for the user prompt.

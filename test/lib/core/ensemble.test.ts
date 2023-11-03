@@ -13,7 +13,7 @@ import {
   Speaker,
   TestCaseType,
   validator,
-} from '../../../src/lib/core/index.js';
+} from '../../../src/lib/index.js';
 
 describe('Ensembles', () => {
   ///////////////////////////////////////////////////////////////////////////////

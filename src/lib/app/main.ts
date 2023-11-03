@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import {program} from 'commander';
 
-import {AnyLink, IModel} from '../core/index.js';
+import {AnyLink} from '../core/index.js';
+import {IModel} from '../models/index.js';
 
 import {clean} from './clean.js';
 import {wrap} from './configure.js';

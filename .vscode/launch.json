@@ -13,7 +13,20 @@
       ],
       "program": "${workspaceFolder}/build/src/samples/main.js",
       "args": ["eval"],
-      "xargs": ["eval", "-o", "foo", "-k", "123"],
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": [
+        "${workspaceFolder}/build/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "openai",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/build/src/samples/openai.js",
+      "args": ["eval", "-i", "data/cases2"],
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": [
         "${workspaceFolder}/build/**/*.js"

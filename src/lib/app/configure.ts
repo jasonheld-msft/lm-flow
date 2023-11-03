@@ -5,13 +5,13 @@ import os from 'os';
 import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
+import {AnyLink} from '../core/index.js';
 import {
-  AnyLink,
   AvailableModels,
   IAvailableModels,
   IModel,
-  loadModelFile,
-} from '../core/index.js';
+  loadModels,
+} from '../models/index.js';
 import {
   ILogger,
   Logger,
@@ -149,7 +149,7 @@ function createConfiguration(
 
   const modelsFile =
     options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
-  const modelsFromFile = loadModelFile(modelsFile);
+  const modelsFromFile = loadModels(modelsFile);
   const models = new AvailableModels([...modelsFromFile, ...additionalModels]);
 
   const openAIKey = options.key || process.env.OPENAI_KEY;

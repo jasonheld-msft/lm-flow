@@ -16,10 +16,8 @@
 
 import z from 'zod';
 
+import {Conversation, IAvailableModels} from '../models/index.js';
 import {POJO} from '../shared/index.js';
-
-import {Conversation} from './conversation.js';
-import {IAvailableModels} from './models.js';
 
 ///////////////////////////////////////////////////////////////////////////////
 //

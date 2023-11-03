@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import {ModelDefinitionList} from './models.js';
+import {ModelDefinitionList} from '../models/index.js';
 
 const StageLog = z.object({
   timestamp: z.date(),

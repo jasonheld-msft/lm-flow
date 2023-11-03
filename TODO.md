@@ -1,6 +1,18 @@
 * Top
+  * Rename
+    * model-flow
+    * lms (language model simulator)
+    * ensemble
+    * lang-flow
+    * combo
+    * sim
   * Documentation
     * Install/build/toolchain
+    * Configuration
+      * .env, .env.template
+      * models
+      * test cases
+      * outputs
     * Conceptual explanation
       * More compelling example
       * Diagram matching example
@@ -9,7 +21,27 @@
     * Instructions on creating an ensemble
   * . Install and configure cloc
     * choco install activeperl
+  * Remove train() method from IModel?
+    * Just keep it for ModelLink?
+  * . OpenAI integration
+  * . Azure OpenAI integration
   * links/ensembles
+    * Extensible way to register function model implementations
+    * Filter models in report by those used
+    * . Azure models
+    * Sensible default for concurrancy
+    * Commander usage should have executable name.
+    * Use name field for root folder name?
+      * Would need to verify os filename name safety
+      * Alphanumeric, dot, dash, now .yaml or .json extensions
+    * Convert MuxLink.input() to return child index.
+    * Catch exceptions at top of eval process for test case.
+    * Training
+      * Add createExpectedCompletion() to Link/Stage
+    * model override flags
+    * --dryrun
+    * Accept yaml or json inputs
+    * --format=yaml|json
     * . Add user context to input() methods of links.
       * template parameter for CONTEXT? (extends POJO)
       * . Add Date type to POJO?
@@ -18,17 +50,15 @@
       * X Not sure this makes sense. Just add context to INPUT?
         * X Need context get to multiple models - not just the first.
     * Consider introducing function stage
-    * Convert MuxLink.input() to return child index.
-    * Training
-      * Add createExpectedCompletion() to Link/Stage
-    * model override flags
-    * Catch exceptions at top of eval process for test case.
-    * Factor AnyLink/TestCaseType/Process
-    * Ensemble folder under lib? types, process, validate, train
-    * Rename Link to Stage (or Node or something else)
-    * Rename process to eval
-    * Rename imput => makePrompt, output => parsePrompt?
-    * TODO: fix type cast in processInternal
+    * Cleanup
+      * Factor AnyLink/TestCaseType/Process
+      * Ensemble folder under lib? types, process, validate, train
+      * Rename Link to Stage (or Node or something else)
+      * Rename process to eval
+      * Rename input => makePrompt, output => parsePrompt?
+    * Type issues
+      * TODO: fix type cast in processInternal
+      * Comments at top of link7.ts
     * ILogger.info() should use level parameter.
     * New zod file loaders
       * x Restore schema validation
@@ -80,7 +110,6 @@
   * Train command
   * Add context to TestCases
   * . Model definition should not reside in data/cases.
-  * OpenAI integration
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
   * Constants for environment variable and file names
@@ -100,7 +129,6 @@
     * x Link cases - migrage from link7Test.ts
 
 
-  * Accept yaml or json inputs
   * Command check for duplicate flags?
   * console.log() => logger.log()
   * Rework wrapper now that Configuration contains logger

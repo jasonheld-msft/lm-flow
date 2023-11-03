@@ -1,6 +1,7 @@
 import z from 'zod';
 import dedent from 'dedent';
 
+import {main} from '../lib/app/main.js';
 import {ModelLink, POJO, SequenceLink, templatedInput} from '../lib/index.js';
 
 // Type Context will replace POJO
@@ -62,3 +63,5 @@ export const sequence1: SequenceLink<
   right: model2,
   validators: {input: z.string(), output: z.string()},
 };
+
+main(sequence1, []);
