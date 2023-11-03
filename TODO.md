@@ -4,19 +4,19 @@
       * x Test in dev container
       * x Fix mocha test explorer in dev container
       * x Cannot find configuration file "./.env". when no .env file.
-      * rename/create new model-flow repo
+      * x rename/create new model-flow repo
       * delete all but readme from this repo
-      * rename package to model-flow
-      * upgrade to 0.0.1
-      * publish
-      * sample usage repo
-  * Rename
-    * model-flow
-    * lms (language model simulator)
-    * ensemble
-    * lang-flow
-    * combo
-    * sim
+      * x rename package to model-flow
+      * x upgrade to 0.0.1
+      * x publish
+      * x sample usage repo
+  * x Rename
+    * x model-flow
+    * x lms (language model simulator)
+    * x ensemble
+    * x lang-flow
+    * x combo
+    * x sim
   * Documentation
     * Install/build/toolchain
     * Configuration
@@ -41,7 +41,7 @@
     * Filter models in report by those used
     * . Azure models
     * Sensible default for concurrancy
-    * Commander usage should have executable name.
+    * Commander usage should have executable name, not lm-flow.
     * Use name field for root folder name?
       * Would need to verify os filename name safety
       * Alphanumeric, dot, dash, now .yaml or .json extensions

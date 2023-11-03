@@ -13,7 +13,7 @@
   },
   "license": "MIT",
   "keywords": [],
-  "repository": "https://github.com/MikeHopcroft/model-flow",
+  "repository": "https://github.com/MikeHopcroft/lm-flow",
   "scripts": {
     "test": "mocha 'build/test/**/*.js' --recursive ",
     "lint": "gts lint",

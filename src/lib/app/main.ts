@@ -72,7 +72,7 @@ export async function main<INPUT, OUTPUT>(
 
   // TODO: name should be executable name
   program
-    .name('model-flow')
+    .name('lm-flow')
     .description('Tool to train and evaluate multi-LLM systems.');
 
   program

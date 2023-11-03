@@ -1,13 +1,13 @@
-# model-flow
+# lm-flow
 
-`model-flow` is an experimental library for evalating and training ensembles of language models.
+`lm-flow` is an experimental library for evalating and training ensembles of language models.
 
-## Using model-flow
+## Using lm-flow
 
 * Create an ensemble definition in TypeScript. (see, for example [src/samples/openai.ts](./src/samples/openai.ts))
-* Use model-flow to create command-line tool.
+* Use lm-flow to create command-line tool.
 ~~~TypeScript
-import {main} from 'model-flow';
+import {main} from 'lm-flow';
 
 const enemble = ...
 main(ensemble, []);
@@ -19,13 +19,13 @@ main(ensemble, []);
 ~~~
 * **COMING SOON:** Generate model training data from a subset of test cases.
 
-## Building model-flow
+## Building lm-flow
 
-Instructions for setting up your environment and building `model-flow` can be found [here](./documentation/build.md).
+Instructions for setting up your environment and building `lm-flow` can be found [here](./documentation/build.md).
 
 ## Running the Examples
 
-`model-flow` comes with an example, using an ensemble of a single OpenAI GPT 3.5 model. Here's the help message command:
+`lm-flow` comes with an example, using an ensemble of a single OpenAI GPT 3.5 model. Here's the help message command:
 
 ~~~
 % node build/src/samples/openai.js -h     
@@ -57,7 +57,7 @@ Before running this example, you must set the OPENAI_API_KEY environment variabl
 
 ~~~
 % node build/src/samples/openai.js eval -i data/cases2
-model-flow tool run "eval" command on Fri Nov 03 2023 11:00:36 GMT-0700 (Pacific Daylight Time).
+lm-flow tool run "eval" command on Fri Nov 03 2023 11:00:36 GMT-0700 (Pacific Daylight Time).
 Configuration from "./.env":
 Configuration:
   INPUT_FOLDER: data/cases2
@@ -79,7 +79,7 @@ testRunId: cab52e78-bf01-46bf-9c21-0a1ae8ffb985
 cmd: >-
   node.exe
   ./build/src/samples/openai.js eval -i data/cases2
-cwd: /git/model-flow
+cwd: /git/lm-flow
 timestamp: 2023-11-03T18:00:36.832Z
 user: mike
 models:

@@ -1,7 +1,7 @@
 You can try out the system in [GitHub Codespaces](https://docs.github.com/en/codespaces/overview) or you can clone and build the repo on your local machine. Instructions for both of these alternatives follow.
 
 ## Alternative 1: Use GitHub CodeSpaces
-In your web browser, navigate to the [repo on GitHub](https://github.com/MikeHopcroft/model-flow). Click the green button, labelled `<> Code` and then choose the `Codespaces` tab.
+In your web browser, navigate to the [repo on GitHub](https://github.com/MikeHopcroft/lm-flow). Click the green button, labelled `<> Code` and then choose the `Codespaces` tab.
 Then click the green `Create codespaces` button.
 
 ![Create codespaces](.//codespaces.png)
@@ -22,7 +22,7 @@ For more information, see the [GitHub CodeSpaces Overview](https://docs.github.c
 
 ## Alternative 2: Configure your Dev Machine
 1. Install [Node.js (20.9.0 LTS or newer)](https://nodejs.org/en). Note that this version of node comes with `npm` package manager.
-2. Clone the repo with `git clone https://github.com/MikeHopcroft/model-flow`.
+2. Clone the repo with `git clone https://github.com/MikeHopcroft/lm-flow`.
 3. `cd` to the root of the repo.
 4. Install packages with `npm install`.
 
@@ -41,7 +41,7 @@ If you are using [Visual Studio Code](https://code.visualstudio.com/), you may f
 
 ## Testing
 
-`model-flow` uses the [mocha test framework](https://www.npmjs.com/package/mocha) with [chai assertions](https://www.npmjs.com/package/chai).
+`lm-flow` uses the [mocha test framework](https://www.npmjs.com/package/mocha) with [chai assertions](https://www.npmjs.com/package/chai).
 
 You can run tests in one of two ways:
 
