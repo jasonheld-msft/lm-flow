@@ -12,22 +12,22 @@ export enum Speaker {
 export interface ConversationTurnBase {
   // Don't require speaker: Speaker. May want to allow other
   // speakers at some point.
-  speaker: string;
+  role: string;
   content: string;
 }
 
 export interface ConversationTurnUser extends ConversationTurnBase {
-  speaker: Speaker.USER;
+  role: Speaker.USER;
   content: string;
 }
 
 export interface ConversationTurnAssistant extends ConversationTurnBase {
-  speaker: Speaker.ASSISTANT;
+  role: Speaker.ASSISTANT;
   content: string;
 }
 
 export interface ConversationTurnSystem extends ConversationTurnBase {
-  speaker: Speaker.SYSTEM;
+  role: Speaker.SYSTEM;
   content: string;
 }
 

@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 import {program} from 'commander';
 
+import {
+  defaultConcurrancy,
+  defaultEnvFile,
+  defaultInputFolder,
+  defaultOutputFolder,
+  environmentHelp,
+} from '../constants.js';
 import {AnyLink} from '../core/index.js';
 import {IModel} from '../models/index.js';
 
 import {clean} from './clean.js';
 import {wrap} from './configure.js';
-import {defaultInputFolder, defaultOutputFolder} from './constants.js';
 import {evaluate} from './evaluator.js';
 import {format} from './format.js';
 import {train} from './train.js';
@@ -19,7 +25,7 @@ export async function main<INPUT, OUTPUT>(
 ) {
   const concurrancyOption = [
     '-c, --concurrancy <limit>',
-    'maximum number of concurrant test case evaluations (default: Infinity)',
+    `maximum number of concurrant test case evaluations (default: ${defaultConcurrancy})`,
   ] as const;
 
   const dryrunOption = [
@@ -30,7 +36,7 @@ export async function main<INPUT, OUTPUT>(
   const envOption = [
     '-e, --env <path>',
     'path to environment file',
-    '.env',
+    `${defaultEnvFile}`,
   ] as const;
 
   const filterOption = [
@@ -63,6 +69,8 @@ export async function main<INPUT, OUTPUT>(
     `path to output folder (default: "${defaultOutputFolder}")`,
   ] as const;
 
+  const extraHelp = environmentHelp();
+
   program
     .name('eclipse')
     .description('Tool to train and evaluate multi-LLM systems.');
@@ -79,6 +87,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
+    .addHelpText('after', extraHelp)
     .action(wrap(evaluate, ensemble, additionalModels));
 
   program
@@ -92,6 +101,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
+    .addHelpText('after', extraHelp)
     .action(wrap(train, ensemble, additionalModels));
 
   program
@@ -99,6 +109,7 @@ export async function main<INPUT, OUTPUT>(
     .description('Format results')
     .option(...envOption)
     .option(...outputOption)
+    .addHelpText('after', extraHelp)
     .action(wrap(format, ensemble, additionalModels));
 
   program
@@ -107,7 +118,9 @@ export async function main<INPUT, OUTPUT>(
     .option(...envOption)
     .option(...outputOption)
     .option('-x, --force', 'do not prompt before removing files')
+    .addHelpText('after', extraHelp)
     .action(wrap(clean, ensemble, additionalModels));
 
+  program.addHelpText('after', extraHelp);
   await program.parseAsync();
 }

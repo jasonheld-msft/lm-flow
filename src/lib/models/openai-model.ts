@@ -1,7 +1,18 @@
-import OpenAI from 'openai';
 import z from 'zod';
 
+import {
+  default_openai_endpoint,
+  openai_api_key,
+  openai_endpoint,
+  openai_organization,
+} from '../constants.js';
+
 import {Conversation} from './conversation.js';
+import {
+  createOpenAILanguageModel,
+  missingEnvironmentVariable,
+  TypeChatLanguageModel,
+} from './typechat-models.js';
 import {IModel} from './types.js';
 
 export const OpenAIModelDefinition = z.object({
@@ -15,40 +26,36 @@ export const OpenAIModelDefinition = z.object({
 export type OpenAIModelDefinition = z.infer<typeof OpenAIModelDefinition>;
 
 export class OpenAIChatModel implements IModel {
-  _spec: OpenAIModelDefinition;
-  openai: OpenAI;
+  specification: OpenAIModelDefinition;
+  model: TypeChatLanguageModel;
 
   constructor(spec: OpenAIModelDefinition) {
-    this._spec = spec;
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
+    this.specification = spec;
+
+    const env = process.env;
+    const apiKey =
+      env[openai_api_key] ?? missingEnvironmentVariable(openai_api_key);
+    const model = spec.config.model;
+    const endPoint = env[openai_endpoint] ?? default_openai_endpoint;
+    const org = env[openai_organization] ?? '';
+
+    this.model = createOpenAILanguageModel(apiKey, model, endPoint, org);
   }
 
   name() {
-    return this._spec.name;
+    return this.specification.name;
   }
 
   spec() {
-    return this._spec;
+    return this.specification;
   }
 
   async complete(conversation: Conversation): Promise<string> {
-    // Convert Conversation to OpenAI form.
-    const messages = conversation.map(turn => ({
-      role: turn.speaker,
-      content: turn.content,
-    }));
-
-    const response = await this.openai.chat.completions.create({
-      model: this._spec.config.model,
-      // model: 'gpt-3.5-turbo-16k',
-      // model: 'gpt-4',
-      max_tokens: this._spec.config.max_tokens,
-      messages,
-    });
-
-    return response.choices[0].message?.content || '';
+    const result = await this.model.complete(conversation);
+    if (!result.success) {
+      throw new Error(`${result.message}`);
+    }
+    return result.data;
   }
 
   train(): Promise<void> {

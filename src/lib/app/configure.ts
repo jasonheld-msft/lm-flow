@@ -5,6 +5,13 @@ import os from 'os';
 import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
+import {
+  defaultConcurrancy,
+  defaultInputFolder,
+  defaultOutputFolder,
+  input_folder,
+  output_folder,
+} from '../constants.js';
 import {AnyLink} from '../core/index.js';
 import {
   AvailableModels,
@@ -18,8 +25,6 @@ import {
   SuitePredicate,
   suitePredicate,
 } from '../shared/index.js';
-
-import {defaultInputFolder, defaultOutputFolder} from './constants.js';
 
 export interface Configuration {
   cmd: string;
@@ -141,9 +146,9 @@ function createConfiguration(
   const user = os.userInfo().username;
 
   const inputFolder =
-    options.input || process.env.INPUT_FOLDER || defaultInputFolder;
+    options.input || process.env[input_folder] || defaultInputFolder;
   const outputFolder =
-    options.output || process.env.OUTPUT_FOLDER || defaultOutputFolder;
+    options.output || process.env[output_folder] || defaultOutputFolder;
 
   const logFile = options.logFile;
 
@@ -158,7 +163,7 @@ function createConfiguration(
 
   const concurrancy = options.concurrancy
     ? Number(options.concurrancy)
-    : Infinity;
+    : defaultConcurrancy;
 
   logger.info('Configuration:', 1);
   logger.info(`  INPUT_FOLDER: ${inputFolder}`, 1);

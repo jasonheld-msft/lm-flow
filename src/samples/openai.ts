@@ -17,7 +17,7 @@ export const model1: ModelLink<string, number, boolean> = {
   input: templatedInput<string, POJO>(
     dedent`
       You are an assistant that counts the number of words in the user text prompt.
-      Return only te number.
+      Return only the number.
     `,
     dedent`
       {{input}}

@@ -1,5 +1,10 @@
+// Code from https://github.com/microsoft/TypeChat
+// Commit a76e72c28155f5c0f3548d2762a8e92de555b66b
+// Path https://github.com/microsoft/TypeChat/blob/main/src/model.ts
+// Modified to use Coversation type.
 import axios from 'axios';
 
+import {Conversation} from './conversation.js';
 import {Result, success, error} from './result.js';
 
 /**
@@ -21,7 +26,7 @@ export interface TypeChatLanguageModel {
    * Obtains a completion from the language model for the given prompt.
    * @param prompt The prompt string.
    */
-  complete(prompt: string): Promise<Result<string>>;
+  complete(conversation: Conversation): Promise<Result<string>>;
 }
 
 /**
@@ -119,7 +124,7 @@ function createAxiosLanguageModel(
   };
   return model;
 
-  async function complete(prompt: string) {
+  async function complete(messages: Conversation) {
     let retryCount = 0;
     const retryMaxAttempts = model.retryMaxAttempts ?? 3;
     const retryPauseMs = model.retryPauseMs ?? 1000;
@@ -127,7 +132,7 @@ function createAxiosLanguageModel(
     while (true) {
       const params = {
         ...defaultParams,
-        messages: [{role: 'user', content: prompt}],
+        messages,
         temperature: 0,
         n: 1,
       };
@@ -175,6 +180,6 @@ function sleep(ms: number): Promise<void> {
 /**
  * Throws an exception for a missing environment variable.
  */
-function missingEnvironmentVariable(name: string): never {
+export function missingEnvironmentVariable(name: string): never {
   throw new Error(`Missing environment variable: ${name}`);
 }

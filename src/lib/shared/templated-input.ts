@@ -10,7 +10,7 @@ export function templatedInput<INPUT, CONTEXT>(
 ) {
   const template = Handlebars.compile(userPromptTemplate);
   return (input: INPUT, context: CONTEXT): Conversation => [
-    {speaker: Speaker.SYSTEM, content: systemPrompt},
-    {speaker: Speaker.USER, content: template({context, input})},
+    {role: Speaker.SYSTEM, content: systemPrompt},
+    {role: Speaker.USER, content: template({context, input})},
   ];
 }

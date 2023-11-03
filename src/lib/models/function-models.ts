@@ -35,6 +35,6 @@ export const functionModels: {[key: string]: IModel} = {
 
 function toPrompt(conversation: Conversation): string {
   return conversation
-    .map(turn => `${turn.speaker.toUpperCase()}: ${turn.content}`)
+    .map(turn => `${turn.role.toUpperCase()}: ${turn.content}`)
     .join('\n');
 }

@@ -23,7 +23,8 @@
     * choco install activeperl
   * Remove train() method from IModel?
     * Just keep it for ModelLink?
-  * . OpenAI integration
+  * x OpenAI integration
+    * Temperature
   * . Azure OpenAI integration
   * links/ensembles
     * Extensible way to register function model implementations
@@ -112,7 +113,7 @@
   * . Model definition should not reside in data/cases.
   * Consider hashing object without tags field.
     * Parse, remove tags, serialize, hash.
-  * Constants for environment variable and file names
+  * x Constants for environment variable and file names
   * . Models definition file and command-line argument
     * Need to decide default configuration location (models and stages)
   * Test result formatter
