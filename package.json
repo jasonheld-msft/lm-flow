@@ -1,6 +1,6 @@
 {
   "name": "model-flow",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "LLM training and evaluation tool",
   "type": "module",
   "exports": "./build/src/index.js",
