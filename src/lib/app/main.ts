@@ -30,7 +30,7 @@ export async function main<INPUT, OUTPUT>(
 
   const dryrunOption = [
     '-d, --dryrun',
-    "dry run - don't write to filesystem",
+    "NOT YET IMPLEMENTED: dry run - don't write to filesystem",
   ] as const;
 
   const envOption = [
@@ -93,7 +93,9 @@ export async function main<INPUT, OUTPUT>(
 
   program
     .command('train')
-    .description('Train a multi-model system')
+    .description(
+      'NOT YET IMPLEMENTED: generate training sets for models in an ensemble'
+    )
     .option(...concurrancyOption)
     .option(...dryrunOption)
     .option(...envOption)
@@ -107,7 +109,7 @@ export async function main<INPUT, OUTPUT>(
 
   program
     .command('format')
-    .description('Format results')
+    .description('NOT YET IMPLMENTED: Format results')
     .option(...envOption)
     .option(...outputOption)
     .addHelpText('after', extraHelp)

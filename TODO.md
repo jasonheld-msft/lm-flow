@@ -1,7 +1,8 @@
 * Top
     * NPM
       * x Minimal README.md
-      * Test in dev container
+      * x Test in dev container
+      * Fix mocha test explorer in dev container
       * rename/create new model-flow repo
       * delete all but readme from this repo
       * rename package to model-flow

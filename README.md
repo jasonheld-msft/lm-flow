@@ -1,14 +1,23 @@
 # model-flow
 
-`model-flow` is an experimental library for evalating and training ennsembles of language models.
+`model-flow` is an experimental library for evalating and training ensembles of language models.
 
 ## Using model-flow
 
-* Create ensemble definition in TypeScript.
+* Create an ensemble definition in TypeScript. (see, for example [src/samples/openai.ts](./src/samples/openai.ts))
 * Use model-flow to create command-line tool.
-* Author test cases.
-* Evaluate a subset of test cases.
-* Generate model training data from a subset of test cases.
+~~~TypeScript
+import {main} from 'model-flow';
+
+const enemble = ...
+main(ensemble, []);
+~~~
+* Author test cases. (see, for example [src/samples/openai.ts](./data/cases2/one.yaml))
+* Run your tool to evaluate a subset of test cases.
+~~~
+% node.exe ./build/src/samples/openai.js eval -i data/cases2
+~~~
+* **COMING SOON:** Generate model training data from a subset of test cases.
 
 ## Building model-flow
 
