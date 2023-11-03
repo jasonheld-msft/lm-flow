@@ -22,6 +22,10 @@
         completion: 'hello'
       - prompt: '2'
         completion: 'hello hello'
+- type: azure
+  name: azure-3.5
+  config:
+    max_tokens: 3000
 - type: openai
   name: openai-3.5
   config:

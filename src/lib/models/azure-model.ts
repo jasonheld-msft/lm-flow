@@ -1,45 +1,40 @@
 import z from 'zod';
 
-import {
-  default_openai_endpoint,
-  openai_api_key,
-  openai_endpoint,
-  openai_organization,
-} from '../constants.js';
+import {azure_openai_api_key, azure_openai_endpoint} from '../constants.js';
 
 import {Conversation} from './conversation.js';
 import {
-  createOpenAILanguageModel,
+  createAzureOpenAILanguageModel,
   missingEnvironmentVariable,
   TypeChatLanguageModel,
 } from './typechat-models.js';
 import {IModel} from './types.js';
 
-export const OpenAIModelDefinition = z.object({
-  type: z.literal('openai'),
+export const AzureModelDefinition = z.object({
+  type: z.literal('azure'),
   name: z.string(),
   config: z.object({
-    model: z.string(),
     max_tokens: z.number(),
   }),
 });
-export type OpenAIModelDefinition = z.infer<typeof OpenAIModelDefinition>;
+export type AzureModelDefinition = z.infer<typeof AzureModelDefinition>;
 
-export class OpenAIModel implements IModel {
-  specification: OpenAIModelDefinition;
+export class AzureModel implements IModel {
+  specification: AzureModelDefinition;
   model: TypeChatLanguageModel;
 
-  constructor(spec: OpenAIModelDefinition) {
+  constructor(spec: AzureModelDefinition) {
     this.specification = spec;
 
     const env = process.env;
     const apiKey =
-      env[openai_api_key] ?? missingEnvironmentVariable(openai_api_key);
-    const model = spec.config.model;
-    const endPoint = env[openai_endpoint] ?? default_openai_endpoint;
-    const org = env[openai_organization] ?? '';
+      env[azure_openai_api_key] ??
+      missingEnvironmentVariable(azure_openai_api_key);
+    const endPoint =
+      env[azure_openai_endpoint] ??
+      missingEnvironmentVariable(azure_openai_endpoint);
 
-    this.model = createOpenAILanguageModel(apiKey, model, endPoint, org);
+    this.model = createAzureOpenAILanguageModel(apiKey, endPoint);
   }
 
   name() {

@@ -3,12 +3,14 @@ import yaml from 'js-yaml';
 import z from 'zod';
 import {generateErrorMessage} from 'zod-error';
 
+import {AzureModel, AzureModelDefinition} from './azure-model.js';
 import {FunctionModelDefinition, functionModels} from './function-models.js';
 import {MockModel, MockModelDefinition} from './mock-model.js';
-import {OpenAIChatModel, OpenAIModelDefinition} from './openai-model.js';
+import {OpenAIModel, OpenAIModelDefinition} from './openai-model.js';
 import {IModel} from './types.js';
 
 export const ModelDefinition = z.discriminatedUnion('type', [
+  AzureModelDefinition,
   FunctionModelDefinition,
   MockModelDefinition,
   OpenAIModelDefinition,
@@ -33,6 +35,8 @@ export function loadModels(filename: string): IModel[] {
 
 export function createModel(definition: ModelDefinition): IModel {
   switch (definition.type) {
+    case 'azure':
+      return new AzureModel(definition);
     case 'function':
       if (definition.name in functionModels) {
         return functionModels[definition.name];
@@ -44,7 +48,7 @@ export function createModel(definition: ModelDefinition): IModel {
     case 'mock':
       return new MockModel(definition);
     case 'openai':
-      return new OpenAIChatModel(definition);
+      return new OpenAIModel(definition);
     default:
       throw new Error(
         `Model definition file references unknown model type ${

@@ -23,9 +23,8 @@
     * choco install activeperl
   * Remove train() method from IModel?
     * Just keep it for ModelLink?
-  * x OpenAI integration
-    * Temperature
-  * . Azure OpenAI integration
+  * Model temperature parameter
+  * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
     * Extensible way to register function model implementations
     * Filter models in report by those used
@@ -67,6 +66,8 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+  * x OpenAI integration
+  * x Azure OpenAI integration
     * x Make input() functions and IModel use Conversations (needed for training)
     * x Make judge() function async to allow for LLM judgment
       * x Example of calling standalone ensemble from judge()
