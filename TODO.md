@@ -1,4 +1,13 @@
 * Top
+    * NPM
+      * x Minimal README.md
+      * Test in dev container
+      * rename/create new model-flow repo
+      * delete all but readme from this repo
+      * rename package to model-flow
+      * upgrade to 0.0.1
+      * publish
+      * sample usage repo
   * Rename
     * model-flow
     * lms (language model simulator)

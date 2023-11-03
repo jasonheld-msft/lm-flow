@@ -71,8 +71,9 @@ export async function main<INPUT, OUTPUT>(
 
   const extraHelp = environmentHelp();
 
+  // TODO: name should be executable name
   program
-    .name('eclipse')
+    .name('model-flow')
     .description('Tool to train and evaluate multi-LLM systems.');
 
   program
