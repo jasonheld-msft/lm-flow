@@ -54,7 +54,9 @@ export async function evaluate<INPUT, OUTPUT>(
 
   const {cmd, cwd, testRunId, user} = configuration;
   const timestamp = configuration.timestamp;
-  const models = [...configuration.models.models()].map(m => m.spec());
+  const models = [...configuration.models.models()]
+    .filter(m => configuration.models.used(m.name()))
+    .map(m => m.spec());
   const runLog = {
     testRunId,
     cmd,

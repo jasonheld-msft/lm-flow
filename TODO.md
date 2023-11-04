@@ -37,10 +37,12 @@
   * Model temperature parameter
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
+    * Compare runs
+      * Accept partial guid match for filename
+    * Accept yaml or json inputs
+    * --format=yaml|json
     * Extensible way to register function model implementations
-    * Filter models in report by those used
     * . Azure models
-    * Sensible default for concurrancy
     * Commander usage should have executable name, not lm-flow.
     * Use name field for root folder name?
       * Would need to verify os filename name safety
@@ -51,8 +53,6 @@
       * Add createExpectedCompletion() to Link/Stage
     * model override flags
     * --dryrun
-    * Accept yaml or json inputs
-    * --format=yaml|json
     * . Add user context to input() methods of links.
       * template parameter for CONTEXT? (extends POJO)
       * . Add Date type to POJO?
@@ -77,6 +77,8 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x Filter models in report by those actually used
+    * x Sensible default for concurrancy
   * x OpenAI integration
   * x Azure OpenAI integration
     * x Make input() functions and IModel use Conversations (needed for training)
