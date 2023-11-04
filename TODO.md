@@ -37,7 +37,6 @@
   * Model temperature parameter
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
-    * --format=yaml|json
     * Compare runs
       * Accept partial guid match for filename
     * Extensible way to register function model implementations
@@ -76,6 +75,8 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x --json
+      * x Modify clean
     * x Accept yaml or json inputs
     * x Filter models in report by those actually used
     * x Sensible default for concurrancy

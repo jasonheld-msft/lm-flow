@@ -1,11 +1,12 @@
 import fs from 'fs-extra';
 import yaml from 'js-yaml';
+import path from 'path';
 import pLimit from 'p-limit';
 
 import {AnyLink, process} from '../core/index.js';
 import {pluralize} from '../shared/index.js';
 
-import {Configuration, makeRunlogFilename} from './configure.js';
+import {Configuration} from './configure.js';
 import {loadTestCases} from './load-test-cases.js';
 
 export interface EvaluateOptions {
@@ -68,7 +69,9 @@ export async function evaluate<INPUT, OUTPUT>(
   };
 
   // Serialize run log to disk.
-  const text = yaml.dump(runLog);
+  const text = configuration.json
+    ? JSON.stringify(runLog, null, 2)
+    : yaml.dump(runLog);
   // console.log(text);
 
   const outfile = makeRunlogFilename(configuration);
@@ -80,4 +83,18 @@ export async function evaluate<INPUT, OUTPUT>(
     fs.writeFile(outfile, text, {encoding: 'utf8'});
   }
   logger.info('Completed evaluation run.', 1);
+}
+
+function makeRunlogFilename({
+  json,
+  logFile,
+  outputFolder,
+  testRunId,
+}: Configuration) {
+  const filename = (logFile || testRunId) + (json ? '.json' : '.yaml');
+
+  // WARNING: do not use path.posix() here. Required for resolve to work correctly
+  // on Windows with absolute paths.
+  const filepath = path.resolve(outputFolder, filename);
+  return filepath;
 }

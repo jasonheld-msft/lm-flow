@@ -2,7 +2,6 @@ import {Command} from 'commander';
 import dotenv from 'dotenv';
 import fs from 'fs-extra';
 import os from 'os';
-import path from 'path';
 import {v4 as uuidv4} from 'uuid';
 
 import {
@@ -34,6 +33,7 @@ export interface Configuration {
   env?: string;
   filter: SuitePredicate;
   inputFolder: string;
+  json: boolean;
   logger: ILogger;
   logFile?: string;
   models: IAvailableModels;
@@ -127,6 +127,7 @@ export interface GeneralOptions {
   env?: string;
   filter?: string;
   input?: string;
+  json?: boolean;
   key?: string;
   logFile?: string;
   models?: string;
@@ -150,6 +151,7 @@ function createConfiguration(
   const outputFolder =
     options.output || process.env[output_folder] || defaultOutputFolder;
 
+  const json = !!options.json;
   const logFile = options.logFile;
 
   const modelsFile =
@@ -179,6 +181,7 @@ function createConfiguration(
     dryrun,
     filter,
     inputFolder,
+    json,
     logFile,
     logger,
     models,
@@ -188,17 +191,4 @@ function createConfiguration(
     timestamp,
     user,
   };
-}
-
-export function makeRunlogFilename({
-  logFile,
-  outputFolder,
-  testRunId,
-}: Configuration) {
-  const filename = logFile || testRunId + '.yaml';
-
-  // WARNING: do not use path.posix() here. Required for resolve to work correctly
-  // on Windows with absolute paths.
-  const filepath = path.resolve(outputFolder, filename);
-  return filepath;
 }

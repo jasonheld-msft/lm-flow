@@ -19,7 +19,6 @@ export async function clean(
   ensemble: AnyLink<any, any>,
   options: CleanOptions
 ) {
-  console.log('------------------------------');
   const logger = configuration.logger;
   const outputFolder = path.resolve(configuration.outputFolder);
 
@@ -44,8 +43,8 @@ export async function clean(
       }
       const files = await filesFromFolder(outputFolder);
       const extras = files.filter(file => {
-        const parts = path.parse(file);
-        return parts.ext !== '.yaml';
+        const ext = path.parse(file).ext.toLowerCase();
+        return ext !== '.yaml' && ext !== '.json';
       });
       if (extras.length > 0) {
         requireConfirmation = true;

@@ -48,6 +48,11 @@ export async function main<INPUT, OUTPUT>(
     `path to folder containing test cases (default: "${defaultInputFolder}")`,
   ] as const;
 
+  const jsonOption = [
+    '-j, --json',
+    'write output in json, instead of yaml',
+  ] as const;
+
   const openAIKey = [
     '-k, --key <OpenAIKey>',
     'Use OpenAI with supplied key")',
@@ -83,6 +88,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...envOption)
     .option(...filterOption)
     .option(...inputOption)
+    .option(...jsonOption)
     .option(...logFileOption)
     .option(...modelsOption)
     .option(...openAIKey)
@@ -100,6 +106,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...envOption)
     .option(...filterOption)
     .option(...inputOption)
+    .option(...jsonOption)
     .option(...modelsOption)
     .option(...openAIKey)
     .option(...outputOption)
