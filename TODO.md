@@ -1,22 +1,4 @@
 * Top
-    * NPM
-      * x Minimal README.md
-      * x Test in dev container
-      * x Fix mocha test explorer in dev container
-      * x Cannot find configuration file "./.env". when no .env file.
-      * x rename/create new model-flow repo
-      * delete all but readme from this repo
-      * x rename package to model-flow
-      * x upgrade to 0.0.1
-      * x publish
-      * x sample usage repo
-  * x Rename
-    * x model-flow
-    * x lms (language model simulator)
-    * x ensemble
-    * x lang-flow
-    * x combo
-    * x sim
   * Documentation
     * Install/build/toolchain
     * Configuration
@@ -29,6 +11,14 @@
       * Diagram matching example
       * judge() function async to allow for LLM judgment
       * output() function async to allow for calls to external services
+      * nodes
+        * model
+        * sequence
+        * mux
+        * if - can implement with mux
+        * loop
+    * Tips
+      * Input in context vs complex type in input chain
     * Instructions on creating an ensemble
   * . Install and configure cloc
     * choco install activeperl
@@ -37,15 +27,21 @@
   * Model temperature parameter
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
-    * Compare runs
+    * Rename Link to Stage (or Node or something else)
+    * Rename ModelDefinition to ModelSpec
+    * Convert MuxLink.input() to return child index.
+    * Should AzureModelDefinition include Azure endpoint? (vs environment variable)
+    * Compare runs command
       * Accept partial guid match for filename
+    * Author command
+      * unverified flag?
+    * Rename format command to report
     * Extensible way to register function model implementations
     * . Azure models
     * Commander usage should have executable name, not lm-flow.
     * Use name field for root folder name?
       * Would need to verify os filename name safety
       * Alphanumeric, dot, dash, now .yaml or .json extensions
-    * Convert MuxLink.input() to return child index.
     * Catch exceptions at top of eval process for test case.
     * Training
       * Add createExpectedCompletion() to Link/Stage
@@ -62,7 +58,6 @@
     * Cleanup
       * Factor AnyLink/TestCaseType/Process
       * Ensemble folder under lib? types, process, validate, train
-      * Rename Link to Stage (or Node or something else)
       * Rename process to eval
       * Rename input => makePrompt, output => parsePrompt?
     * Type issues
@@ -124,6 +119,7 @@
     * training
     * tests
   * Train command
+    * Should organize training cases by node name, not model name
   * Add context to TestCases
   * . Model definition should not reside in data/cases.
   * Consider hashing object without tags field.
@@ -139,10 +135,28 @@
   * Move .env configuration out of configure() - separate from logger.
   * Reorganize types.ts
   * Configure mocha and test runner
-  * Mocha
+  * x Mocha
     * x configure
     * x Boolean expression parser cases
     * x Link cases - migrage from link7Test.ts
+  * NPM
+    * x Minimal README.md
+    * x Test in dev container
+    * x Fix mocha test explorer in dev container
+    * x Cannot find configuration file "./.env". when no .env file.
+    * x rename/create new model-flow repo
+    * delete all but readme from this repo
+    * x rename package to model-flow
+    * x upgrade to 0.0.1
+    * x publish
+    * x sample usage repo
+  * x Rename
+    * x model-flow
+    * x lms (language model simulator)
+    * x ensemble
+    * x lang-flow
+    * x combo
+    * x sim
 
 
   * Command check for duplicate flags?

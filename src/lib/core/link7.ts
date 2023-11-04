@@ -35,6 +35,7 @@ export type ModelLink<INPUT, OUTPUT, JUDGMENT> = {
   model: string;
   input: (x: INPUT, context: POJO) => Conversation;
   output: (x: string) => Promise<OUTPUT>;
+  train?: (x: OUTPUT) => string;
   judge?: (observed: OUTPUT, expected: OUTPUT) => Promise<JUDGMENT>;
   validators: Validators<INPUT, OUTPUT>;
 };
