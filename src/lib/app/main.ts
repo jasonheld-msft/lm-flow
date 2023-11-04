@@ -13,7 +13,7 @@ import {IModel} from '../models/index.js';
 
 import {clean} from './clean.js';
 import {wrap} from './configure.js';
-import {evaluate} from './evaluator.js';
+import {evaluate} from './evaluate.js';
 import {format} from './format.js';
 import {train} from './train.js';
 

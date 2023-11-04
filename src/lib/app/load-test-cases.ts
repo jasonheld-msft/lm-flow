@@ -17,10 +17,9 @@ export async function loadTestCases<INPUT, OUTPUT>(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ensemble: AnyLink<INPUT, OUTPUT>
 ): Promise<TestCase<AnyLink<INPUT, OUTPUT>>[]> {
-  // const logger = configuration.logger;
+  const {logger} = configuration;
   const limit = pLimit(configuration.concurrancy);
 
-  // TODO: restore schema validation
   const ensembleValidator = z.object({
     testCaseId: z.string(),
     sha: z.string(),
@@ -34,11 +33,29 @@ export async function loadTestCases<INPUT, OUTPUT>(
   const files = await filesFromFolder(configuration.inputFolder);
 
   // Load, hash, parse, and validate each test case.
-  const promises = files.map(f => limit(readFile, f));
+  const filesToProcess = files
+    .map(f => {
+      const {ext} = path.parse(f);
+      return {name: f, ext: ext.toLowerCase()};
+    })
+    .filter(({name, ext}) => {
+      if (ext !== '.yaml' && ext !== '.json') {
+        logger.info(`File ${name} is not a test case.`, 1);
+        return false;
+      }
+      return true;
+    }) as {name: string; ext: '.yaml' | '.json'}[];
+  const promises = filesToProcess.map(({name}) => limit(readFile, name));
   const buffers = await Promise.all(promises);
   const testCases = buffers.map((buffer, i) => {
+    const {name: filename, ext} = filesToProcess[i];
+
+    // TODO: parse, remove tags, name, serialize, then hash.
     const sha = createHash('sha256').update(buffer).digest('hex');
-    const obj = yaml.load(buffer.toString('utf-8'));
+    const text = buffer.toString('utf-8');
+
+    // NOTE: filter above ensures that ext is either '.yaml' or '.json'.
+    const obj = ext === '.yaml' ? yaml.load(text) : JSON.parse(text);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ('sha' in (obj as any)) {
@@ -48,7 +65,7 @@ export async function loadTestCases<INPUT, OUTPUT>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (obj as any).sha = sha;
 
-    const relativeFileName = path.relative(configuration.inputFolder, files[i]);
+    const relativeFileName = path.relative(configuration.inputFolder, filename);
     const parts = path.parse(relativeFileName);
     // DESIGN NOTE: use path.posix for text_case_id
     // to get consistent naming across operating systems.
@@ -87,7 +104,7 @@ export async function loadTestCases<INPUT, OUTPUT>(
       return result.data as unknown as TestCase<AnyLink<INPUT, OUTPUT>>;
     } else {
       const zodError = generateErrorMessage(result.error.issues);
-      const errorMessage = `In ${files[i]}: ${zodError}`;
+      const errorMessage = `In ${filename}: ${zodError}`;
       throw new Error(errorMessage);
     }
   });

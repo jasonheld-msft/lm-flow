@@ -1,4 +1,5 @@
 import fs from 'fs';
+import path from 'path';
 import yaml from 'js-yaml';
 import z from 'zod';
 import {generateErrorMessage} from 'zod-error';
@@ -21,8 +22,12 @@ export const ModelDefinitionList = z.array(ModelDefinition);
 export type ModelDefinitionList = z.infer<typeof ModelDefinitionList>;
 
 export function loadModels(filename: string): IModel[] {
+  const ext = path.parse(filename).ext.toLowerCase();
+  if (ext !== '.yaml' && ext !== 'json') {
+    throw new Error(`Model ${filename} must be YAML or JSON.`);
+  }
   const text = fs.readFileSync(filename, 'utf-8');
-  const obj = yaml.load(text);
+  const obj = ext === '.yaml' ? yaml.load(text) : JSON.parse(text);
   const result = ModelDefinitionList.safeParse(obj);
   if (!result.success) {
     const zodError = generateErrorMessage(result.error.issues);
