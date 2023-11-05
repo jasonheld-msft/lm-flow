@@ -92,9 +92,9 @@ describe('Ensembles', () => {
       type: 'mux',
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       input: (x: number) => [
-        {input: true, link: model1},
-        {input: 5, link: model2},
-        {input: false, link: model1},
+        {input: true, index: 0},
+        {input: 5, index: 1},
+        {input: false, index: 0},
       ],
       output: async (x: (number | string)[]) => x.map(y => typeof y).join(', '),
       children: [model1, model2],

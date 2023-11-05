@@ -74,10 +74,10 @@ export type Validators<INPUT, OUTPUT> = {
 
 // The union of types of Links in a tuple.
 export type MuxTypes<T> = T extends readonly [
-  AnyLink<infer INPUT, infer OUTPUT>,
+  AnyLink<infer INPUT, any>,
   ...infer Tail
 ]
-  ? {input: INPUT; link: AnyLink<INPUT, OUTPUT>} | MuxTypes<Tail>
+  ? {input: INPUT; index: number} | MuxTypes<Tail>
   : never;
 
 // The union of OUTPUT types of Links in a tuple.
@@ -348,11 +348,13 @@ export async function processMux<
   verifyTestCaseType(testCase, link);
   const {type, judge} = link;
   const {expected} = testCase;
-  const promises = link
-    .input(input)
-    .map((x, i) =>
-      process(models, x.link, x.input, context, testCase.children[i])
-    );
+  const promises = link.input(input).map((x, i) => {
+    if (x.index < 0 || x.index >= link.children.length) {
+      throw new Error(`Index ${x.index} out of range in mux node.`);
+    }
+    const child = link.children[x.index];
+    return process(models, child, x.input, context, testCase.children[i]);
+  });
   const children = await Promise.all(promises);
   const outputs = children.map(x => x.output);
   // TODO: remove the following type assertion to any

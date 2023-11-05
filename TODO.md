@@ -27,9 +27,11 @@
   * Model temperature parameter
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
+    * All node types should have names.
+    * Verify unique names.
     * Rename Link to Stage (or Node or something else)
     * Rename ModelDefinition to ModelSpec
-    * Convert MuxLink.input() to return child index.
+    * x Convert MuxLink.input() to return child index.
     * Should AzureModelDefinition include Azure endpoint? (vs environment variable)
     * Compare runs command
       * Accept partial guid match for filename
