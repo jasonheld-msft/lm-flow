@@ -14,7 +14,7 @@ import {IModel} from '../models/index.js';
 import {clean} from './clean.js';
 import {wrap} from './configure.js';
 import {evaluate} from './evaluate.js';
-import {format} from './format.js';
+import {report} from './report.js';
 import {train} from './train.js';
 
 // import {clean, evaluate, format, train} from './commands/index.js';
@@ -114,12 +114,22 @@ export async function main<INPUT, OUTPUT>(
     .action(wrap(train, ensemble, additionalModels));
 
   program
-    .command('format')
-    .description('NOT YET IMPLMENTED: Format results')
+    .command('report')
+    .description('NOT YET IMPLMENTED: Generate report on a run')
     .option(...envOption)
     .option(...outputOption)
     .addHelpText('after', extraHelp)
-    .action(wrap(format, ensemble, additionalModels));
+    .action(wrap(report, ensemble, additionalModels));
+
+  program
+    .command('compare')
+    .argument('<a>', 'unique prefix to first runlog name')
+    .argument('<b>', 'unique prefix to second runlog name')
+    .description('NOT YET IMPLMENTED: compare two runs')
+    .option(...envOption)
+    .option(...outputOption)
+    .addHelpText('after', extraHelp)
+    .action(() => console.log('Compare command not implemented.'));
 
   program
     .command('clean')

@@ -28,19 +28,22 @@
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
   * links/ensembles
     * All node types should have names.
+    * Consider moving `input` from TestCase to TestCaseType.
+      * Maybe needed for training.
+      * Does this put too big a burden on TestCase authors?
+      * Can sometimes infer `input` if previous stage had an `expected`.
     * Verify unique names.
     * Rename Link to Stage (or Node or something else)
     * Rename ModelDefinition to ModelSpec
-    * x Convert MuxLink.input() to return child index.
     * Should AzureModelDefinition include Azure endpoint? (vs environment variable)
     * Compare runs command
       * Accept partial guid match for filename
     * Author command
       * unverified flag?
-    * Rename format command to report
     * Extensible way to register function model implementations
     * . Azure models
     * Commander usage should have executable name, not lm-flow.
+    * Command line in runlog should be array. Joining with spaces loses information (e.g. "C:\program files\...")
     * Use name field for root folder name?
       * Would need to verify os filename name safety
       * Alphanumeric, dot, dash, now .yaml or .json extensions
@@ -72,6 +75,8 @@
       * Disallow duplicate link/stage names? What about cycles?
       * Process loop limit count for cycles
       * Switch stage to loop back or move forward
+    * x Convert MuxLink.input() to return child index.
+    * x Rename format command to report
     * x --json
       * x Modify clean
     * x Accept yaml or json inputs
