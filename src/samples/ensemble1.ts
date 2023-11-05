@@ -23,6 +23,7 @@ export const model1: ModelLink<string, number, boolean> = {
     `
   ),
   output: async (completion: string) => Number(completion),
+  train: (output: number) => String(output) + '\n',
   judge: async (observed: number, expected: number) => observed === expected,
   validators: {
     input: z.string(),
@@ -43,6 +44,8 @@ export const model2: ModelLink<number, string, boolean> = {
     `
   ),
   output: async (completion: string) => completion,
+  train: (output: string) => output,
+  // train: (output: string) => String(output.match(/(hello)/g)?.length || 0),
   judge: async (observed: string, expected: string) => observed === expected,
   validators: {
     input: z.number(),

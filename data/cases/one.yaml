@@ -5,5 +5,5 @@ context:
   date: 2023-11-01T23:12:40.452Z
 expected:
   type: 'sequence'
-  left: {type: 'model', name: 'model1', expected: 2}
-  right: {type: 'model', name: 'model2', expected: 'hello hello'}
+  left: {type: 'model', name: 'model1', expected: 1}
+  right: {type: 'model', name: 'model2', expected: 'hello'}

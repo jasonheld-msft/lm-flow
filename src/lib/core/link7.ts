@@ -115,17 +115,18 @@ export type TestCaseType<LINK> = LINK extends ModelLink<any, any, any>
   : never;
 
 export type TestCaseModelType<LINK> = LINK extends ModelLink<
-  any,
+  infer INPUT,
   infer OUTPUT,
   any
 >
   ? Pick<LINK, 'type' | 'name'> & {
+      input?: INPUT;
       expected?: OUTPUT;
     }
   : never;
 
 export type TestCaseSequenceType<LINK> = LINK extends SequenceLink<
-  any,
+  infer INPUT,
   infer OUTPUT,
   any,
   any,
@@ -133,6 +134,7 @@ export type TestCaseSequenceType<LINK> = LINK extends SequenceLink<
   any
 >
   ? Pick<LINK, 'type'> & {
+      input?: INPUT;
       left: TestCaseType<LINK['left']>;
       right: TestCaseType<LINK['right']>;
       expected?: OUTPUT;
@@ -147,12 +149,13 @@ export type TestCaseMuxOutputTypes<T> = T extends readonly [
   : never;
 
 export type TestCaseMuxType<LINK> = LINK extends MuxLink<
-  any,
+  infer INPUT,
   infer OUTPUT,
   infer CHILDREN,
   any
 >
   ? Pick<LINK, 'type'> & {
+      input?: INPUT;
       children: TestCaseMuxOutputTypes<CHILDREN>[];
       expected?: OUTPUT;
     }

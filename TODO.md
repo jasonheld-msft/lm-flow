@@ -22,11 +22,18 @@
     * Instructions on creating an ensemble
   * . Install and configure cloc
     * choco install activeperl
-  * Remove train() method from IModel?
-    * Just keep it for ModelLink?
   * Model temperature parameter
   * Should Azure OpenAI endpoint be in AzureModelDefinition, instead of environment?
+  * Train command
+    * Come up with a better ensemble example seq(model1, mux(model2, model3)). Maybe even add a summarizer.
+    * Should organize training cases by node name, not model name
+    * Remove train() method from IModel?
+      * Just keep it for ModelLink?
   * links/ensembles
+    * Measure latency?
+    * Measure token count?
+      * https://www.npmjs.com/package/tiktoken
+      * https://www.npmjs.com/package/js-tiktoken
     * All node types should have names.
     * Consider moving `input` from TestCase to TestCaseType.
       * Maybe needed for training.
@@ -125,8 +132,6 @@
     * runs
     * training
     * tests
-  * Train command
-    * Should organize training cases by node name, not model name
   * Add context to TestCases
   * . Model definition should not reside in data/cases.
   * Consider hashing object without tags field.

@@ -7,12 +7,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "main",
+      "name": "train",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/build/src/samples/main.js",
-      "args": ["eval"],
+      "program": "${workspaceFolder}/build/src/samples/ensemble1.js",
+      "args": ["train"],
       "preLaunchTask": "tsc: build - tsconfig.json",
       "outFiles": [
         "${workspaceFolder}/build/**/*.js"

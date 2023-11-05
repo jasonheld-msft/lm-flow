@@ -22,6 +22,8 @@
         completion: 'hello'
       - prompt: '2'
         completion: 'hello hello'
+      - prompt: '3'
+        completion: 'hello hello hello'
 - type: azure
   name: azure-3.5
   config:

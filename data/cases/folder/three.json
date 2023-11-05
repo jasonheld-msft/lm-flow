@@ -12,12 +12,12 @@
     "left": {
       "type": "model",
       "name": "model1",
-      "expected": 2
+      "expected": 3
     },
     "right": {
       "type": "model",
       "name": "model2",
-      "expected": "hello hello"
+      "expected": "hello hello hello"
     }
   }
 }
