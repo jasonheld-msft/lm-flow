@@ -6,7 +6,7 @@ export type SuitePredicate = (suites: string[]) => boolean;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const allSuites: SuitePredicate = (suites: string[]) => true;
 
-// Constructs a SuitePredicate from a a textual boolean expression
+// Constructs a SuitePredicate from a textual boolean expression
 // over suite names. The expression can be made up of
 //   TERM: a suite name - any sequence of non-space characters that
 //         does not include the symbols '(', ')', '&', '|', and '!'

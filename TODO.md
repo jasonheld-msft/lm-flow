@@ -1,3 +1,43 @@
+* V2
+  * Set up npm command - `lmflow`
+  * Config
+    * env
+    * env file
+    * cmd line args
+    * .lmflow.json
+    * run config file
+  * Store
+    * File system today, db tomorrow
+    * File system walker
+    * File system layout
+      * Might want grouping subdirs
+      * File names are uuids.extension
+    * Abstraction interface - async
+    * Index Map<input, TestCase2>
+    * Initially expected field equivalence is string =
+  * TestCase2 type
+    * input
+    * expected?
+    * score?
+    * tags
+    * uuid
+    * comment
+  * lmflow command
+    * flags
+      * --dryrun
+      * --nomerge
+    * select
+      * filter on tags
+      * output format
+        * structured JSON/YAML which is an array of TestCase2 - for most automation
+        * .txt file of input text only - for doing a run
+        * .csv file of certain columns - for using excel to label/inspect
+    * upsert
+      * Schema validate
+    * eval
+      * ensemble can be made from prompt template
+    * partition
+    * find - prints out path to file
 * Top
   * Documentation
     * Install/build/toolchain
