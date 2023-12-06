@@ -5,10 +5,16 @@ import os from 'os';
 import {v4 as uuidv4} from 'uuid';
 
 import {
+  azure_openai_api_key,
+  azure_openai_endpoint,
   defaultConcurrancy,
   defaultInputFolder,
   defaultOutputFolder,
+  default_openai_endpoint,
   input_folder,
+  openai_api_key,
+  openai_endpoint,
+  openai_organization,
   output_folder,
 } from '../constants.js';
 import {AnyLink} from '../core/index.js';
@@ -16,6 +22,7 @@ import {
   AvailableModels,
   IAvailableModels,
   IModel,
+  IServiceModelConfiguration,
   loadModels,
 } from '../models/index.js';
 import {
@@ -26,6 +33,7 @@ import {
 } from '../shared/index.js';
 
 export interface Configuration {
+  azure: IServiceModelConfiguration;
   cmd: string;
   concurrancy: number;
   cwd: string;
@@ -37,7 +45,7 @@ export interface Configuration {
   logger: ILogger;
   logFile?: string;
   models: IAvailableModels;
-  openAIKey?: string;
+  openai: IServiceModelConfiguration;
   outputFolder: string;
   testRunId: string;
   timestamp: Date;
@@ -71,12 +79,13 @@ export function wrap<
     );
 
     try {
-      configureEnvironmentVariables(logger, options.env);
+      const envVars = configureEnvironmentVariables(logger, options.env);
       if (!logger.hasErrors()) {
         const configuration = createConfiguration(
           logger,
           options,
-          additionalModels
+          additionalModels,
+          envVars
         );
         if (!logger.hasErrors()) {
           logger.info('', 1);
@@ -103,6 +112,7 @@ export function wrap<
 }
 
 function configureEnvironmentVariables(logger: ILogger, env?: string) {
+  const envVars = {};
   if (env) {
     if (!fs.existsSync(env)) {
       logger.error(`Cannot find configuration file "${env}".`);
@@ -112,13 +122,14 @@ function configureEnvironmentVariables(logger: ILogger, env?: string) {
         logger.error(`Configuration path "${env}" is not a file.`);
       } else {
         logger.info(`Configuration from "${env}":`, 1);
-        dotenv.config({path: env});
+        dotenv.config({path: env, processEnv: envVars});
       }
     }
   } else {
     logger.info('Configuration from default location:', 1);
-    dotenv.config();
+    dotenv.config({processEnv: envVars});
   }
+  return envVars;
 }
 
 export interface GeneralOptions {
@@ -137,7 +148,8 @@ export interface GeneralOptions {
 function createConfiguration(
   logger: ILogger,
   options: GeneralOptions,
-  additionalModels: IModel[]
+  additionalModels: IModel[],
+  envVars: {[key: string]: string}
 ): Configuration {
   const cmd = process.argv.join(' ');
   const cwd = process.cwd();
@@ -147,19 +159,18 @@ function createConfiguration(
   const user = os.userInfo().username;
 
   const inputFolder =
-    options.input || process.env[input_folder] || defaultInputFolder;
+    options.input || envVars[input_folder] || defaultInputFolder;
   const outputFolder =
-    options.output || process.env[output_folder] || defaultOutputFolder;
+    options.output || envVars[output_folder] || defaultOutputFolder;
 
   const json = !!options.json;
   const logFile = options.logFile;
 
-  const modelsFile =
-    options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
-  const modelsFromFile = loadModels(modelsFile);
-  const models = new AvailableModels([...modelsFromFile, ...additionalModels]);
-
-  const openAIKey = options.key || process.env.OPENAI_KEY;
+  const openAIKey = (options.key || envVars[openai_api_key]) ?? '';
+  const openAIEndpoint = envVars[openai_endpoint] ?? default_openai_endpoint;
+  const openAIOrganization = envVars[openai_organization] ?? '';
+  const azureOpenAIKey = envVars[azure_openai_api_key] ?? '';
+  const azureOpenAIEndpoint = envVars[azure_openai_endpoint] ?? '';
 
   const filter = options.filter ? suitePredicate(options.filter) : () => true;
 
@@ -174,7 +185,11 @@ function createConfiguration(
   logger.info(`  CONCURRANCY: ${concurrancy}`, 1);
   // WARNING: For security, do not log openAIKey
 
-  return {
+  const config = {
+    azure: {
+      endpoint: azureOpenAIEndpoint,
+      key: azureOpenAIKey,
+    },
     cmd,
     concurrancy,
     cwd,
@@ -184,11 +199,23 @@ function createConfiguration(
     json,
     logFile,
     logger,
-    models,
-    openAIKey,
+    openai: {
+      endpoint: openAIEndpoint,
+      key: openAIKey,
+      organization: openAIOrganization,
+    },
     outputFolder,
     testRunId,
     timestamp,
     user,
+  };
+
+  const modelsFile =
+    options.models || envVars.MODEL_DEFINITION || './data/models.yaml';
+  const modelsFromFile = loadModels(modelsFile, config);
+
+  return {
+    ...config,
+    models: new AvailableModels([...modelsFromFile, ...additionalModels]),
   };
 }
