@@ -79,13 +79,12 @@ export function wrap<
     );
 
     try {
-      const envVars = configureEnvironmentVariables(logger, options.env);
+      configureEnvironmentVariables(logger, options.env);
       if (!logger.hasErrors()) {
         const configuration = createConfiguration(
           logger,
           options,
-          additionalModels,
-          envVars
+          additionalModels
         );
         if (!logger.hasErrors()) {
           logger.info('', 1);
@@ -112,7 +111,6 @@ export function wrap<
 }
 
 function configureEnvironmentVariables(logger: ILogger, env?: string) {
-  const envVars = {};
   if (env) {
     if (!fs.existsSync(env)) {
       logger.error(`Cannot find configuration file "${env}".`);
@@ -122,14 +120,13 @@ function configureEnvironmentVariables(logger: ILogger, env?: string) {
         logger.error(`Configuration path "${env}" is not a file.`);
       } else {
         logger.info(`Configuration from "${env}":`, 1);
-        dotenv.config({path: env, processEnv: envVars});
+        dotenv.config({path: env});
       }
     }
   } else {
     logger.info('Configuration from default location:', 1);
-    dotenv.config({processEnv: envVars});
+    dotenv.config();
   }
-  return envVars;
 }
 
 export interface GeneralOptions {
@@ -148,8 +145,7 @@ export interface GeneralOptions {
 function createConfiguration(
   logger: ILogger,
   options: GeneralOptions,
-  additionalModels: IModel[],
-  envVars: {[key: string]: string}
+  additionalModels: IModel[]
 ): Configuration {
   const cmd = process.argv.join(' ');
   const cwd = process.cwd();
@@ -159,18 +155,19 @@ function createConfiguration(
   const user = os.userInfo().username;
 
   const inputFolder =
-    options.input || envVars[input_folder] || defaultInputFolder;
+    options.input || process.env[input_folder] || defaultInputFolder;
   const outputFolder =
-    options.output || envVars[output_folder] || defaultOutputFolder;
+    options.output || process.env[output_folder] || defaultOutputFolder;
 
   const json = !!options.json;
   const logFile = options.logFile;
 
-  const openAIKey = (options.key || envVars[openai_api_key]) ?? '';
-  const openAIEndpoint = envVars[openai_endpoint] ?? default_openai_endpoint;
-  const openAIOrganization = envVars[openai_organization] ?? '';
-  const azureOpenAIKey = envVars[azure_openai_api_key] ?? '';
-  const azureOpenAIEndpoint = envVars[azure_openai_endpoint] ?? '';
+  const openAIKey = (options.key || process.env[openai_api_key]) ?? '';
+  const openAIEndpoint =
+    process.env[openai_endpoint] ?? default_openai_endpoint;
+  const openAIOrganization = process.env[openai_organization] ?? '';
+  const azureOpenAIKey = process.env[azure_openai_api_key] ?? '';
+  const azureOpenAIEndpoint = process.env[azure_openai_endpoint] ?? '';
 
   const filter = options.filter ? suitePredicate(options.filter) : () => true;
 
@@ -211,7 +208,7 @@ function createConfiguration(
   };
 
   const modelsFile =
-    options.models || envVars.MODEL_DEFINITION || './data/models.yaml';
+    options.models || process.env.MODEL_DEFINITION || './data/models.yaml';
   const modelsFromFile = loadModels(modelsFile, config);
 
   return {
