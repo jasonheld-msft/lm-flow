@@ -19,9 +19,9 @@ export interface EvaluateOptions {
 
 export async function evaluate<INPUT, OUTPUT>(
   configuration: Configuration,
-  ensemble: AnyLink<INPUT, OUTPUT>,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  options: EvaluateOptions
+  options: EvaluateOptions,
+  ensemble: AnyLink<INPUT, OUTPUT>
 ) {
   const logger = configuration.logger;
   const testCases = await loadTestCases(configuration, ensemble);

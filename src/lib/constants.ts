@@ -18,6 +18,8 @@ export const azure_openai_endpoint = 'AZURE_OPENAI_ENDPOINT';
 // Tool
 export const input_folder = 'INPUT_FOLDER';
 export const defaultInputFolder = './data/cases';
+export const store_folder = 'STORE_FOLDER';
+export const defaultStoreFolder = './store';
 export const output_folder = 'OUTPUT_FOLDER';
 export const defaultOutputFolder = './data/runs';
 export const defaultConcurrancy = 1;

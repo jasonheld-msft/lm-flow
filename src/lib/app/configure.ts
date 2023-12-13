@@ -10,12 +10,14 @@ import {
   defaultConcurrancy,
   defaultInputFolder,
   defaultOutputFolder,
+  defaultStoreFolder,
   default_openai_endpoint,
   input_folder,
   openai_api_key,
   openai_endpoint,
   openai_organization,
   output_folder,
+  store_folder,
 } from '../constants.js';
 import {AnyLink} from '../core/index.js';
 import {
@@ -47,10 +49,22 @@ export interface Configuration {
   models: IAvailableModels;
   openai: IServiceModelConfiguration;
   outputFolder: string;
+  storeFolder: string;
   testRunId: string;
   timestamp: Date;
   user: string;
 }
+
+type FuncWithEnsemble<INPUT, OUTPUT, OPTIONS> = (
+  configuration: Configuration,
+  options: OPTIONS,
+  ensemble: AnyLink<INPUT, OUTPUT>
+) => Promise<void>;
+
+type FuncWithoutEnsemble<OPTIONS> = (
+  configuration: Configuration,
+  options: OPTIONS
+) => Promise<void>;
 
 // Wrapper to produce Commander action function that
 // captures ensemble and additionalModels.
@@ -60,13 +74,9 @@ export function wrap<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   OPTIONS extends {[key: string]: any}
 >(
-  f: (
-    configuration: Configuration,
-    ensemble: AnyLink<INPUT, OUTPUT>,
-    options: OPTIONS
-  ) => Promise<void>,
-  ensemble: AnyLink<INPUT, OUTPUT>,
-  additionalModels: IModel[]
+  f: FuncWithEnsemble<INPUT, OUTPUT, OPTIONS> | FuncWithoutEnsemble<OPTIONS>,
+  additionalModels: IModel[],
+  ensemble?: AnyLink<INPUT, OUTPUT>
 ): (this: Command, options: OPTIONS) => Promise<void> {
   // NOTE: cannot use an arrow function here because of the this: parameter.
   async function wrapper(this: Command, options: OPTIONS) {
@@ -88,7 +98,15 @@ export function wrap<
         );
         if (!logger.hasErrors()) {
           logger.info('', 1);
-          await f(configuration, ensemble, options);
+          if (ensemble) {
+            await (f as FuncWithEnsemble<INPUT, OUTPUT, OPTIONS>)(
+              configuration,
+              options,
+              ensemble
+            );
+          } else {
+            await (f as FuncWithoutEnsemble<OPTIONS>)(configuration, options);
+          }
           logger.info('', 1);
         }
       }
@@ -140,6 +158,7 @@ export interface GeneralOptions {
   logFile?: string;
   models?: string;
   output?: string;
+  store?: string;
 }
 
 function createConfiguration(
@@ -158,6 +177,8 @@ function createConfiguration(
     options.input || process.env[input_folder] || defaultInputFolder;
   const outputFolder =
     options.output || process.env[output_folder] || defaultOutputFolder;
+  const storeFolder =
+    options.store || process.env[store_folder] || defaultStoreFolder;
 
   const json = !!options.json;
   const logFile = options.logFile;
@@ -202,6 +223,7 @@ function createConfiguration(
       organization: openAIOrganization,
     },
     outputFolder,
+    storeFolder,
     testRunId,
     timestamp,
     user,

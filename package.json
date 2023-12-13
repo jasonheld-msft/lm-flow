@@ -34,6 +34,7 @@
     "@types/js-yaml": "^4.0.8",
     "@types/luxon": "^3.3.3",
     "@types/mocha": "^10.0.3",
+    "@types/mock-fs": "^4.13.4",
     "@types/node": "^14.11.2",
     "@types/prompt-sync": "^4.2.2",
     "@types/uuid": "^9.0.6",
@@ -41,6 +42,7 @@
     "cloc": "^1.98.0-cloc",
     "gts": "^3.1.1",
     "mocha": "^10.2.0",
+    "mock-fs": "^5.2.0",
     "ts-node": "^10.9.1",
     "typescript": "~4.7.0"
   },

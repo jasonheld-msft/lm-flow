@@ -40,3 +40,6 @@ yarn-error.log*
 
 # Sample tool output
 data/runs
+
+# Store
+./store

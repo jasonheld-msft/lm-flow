@@ -23,9 +23,8 @@ export interface TrainOptions {
 export async function train<INPUT, OUTPUT>(
   configuration: Configuration,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ensemble: AnyLink<INPUT, OUTPUT>,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  options: TrainOptions
+  options: TrainOptions,
+  ensemble: AnyLink<INPUT, OUTPUT>
 ) {
   // configuration.logger.info('Train command not implemented.', 1);
 

@@ -9,9 +9,9 @@ export interface ReportOptions {
 export async function report<INPUT, OUTPUT>(
   configuration: Configuration,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ensemble: AnyLink<INPUT, OUTPUT>,
+  options: ReportOptions,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  options: ReportOptions
+  ensemble: AnyLink<INPUT, OUTPUT>
 ) {
   configuration.logger.info('Format command not implemented.', 1);
 }

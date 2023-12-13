@@ -6,6 +6,7 @@ import {
   defaultEnvFile,
   defaultInputFolder,
   defaultOutputFolder,
+  defaultStoreFolder,
   environmentHelp,
 } from '../constants.js';
 import {AnyLink} from '../core/index.js';
@@ -15,6 +16,7 @@ import {clean} from './clean.js';
 import {wrap} from './configure.js';
 import {evaluate} from './evaluate.js';
 import {report} from './report.js';
+import {store} from './store.js';
 import {train} from './train.js';
 
 // import {clean, evaluate, format, train} from './commands/index.js';
@@ -73,6 +75,11 @@ export async function main<INPUT, OUTPUT>(
     `path to output folder (default: "${defaultOutputFolder}")`,
   ] as const;
 
+  const storeOption = [
+    '--store <path>',
+    `path to store folder (default: "${defaultStoreFolder}")`,
+  ] as const;
+
   const extraHelp = environmentHelp();
 
   // TODO: name should be executable name
@@ -94,7 +101,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...openAIKey)
     .option(...outputOption)
     .addHelpText('after', extraHelp)
-    .action(wrap(evaluate, ensemble, additionalModels));
+    .action(wrap(evaluate, additionalModels, ensemble));
 
   program
     .command('train')
@@ -111,7 +118,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...openAIKey)
     .option(...outputOption)
     .addHelpText('after', extraHelp)
-    .action(wrap(train, ensemble, additionalModels));
+    .action(wrap(train, additionalModels, ensemble));
 
   program
     .command('report')
@@ -119,7 +126,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...envOption)
     .option(...outputOption)
     .addHelpText('after', extraHelp)
-    .action(wrap(report, ensemble, additionalModels));
+    .action(wrap(report, additionalModels, ensemble));
 
   program
     .command('compare')
@@ -138,7 +145,41 @@ export async function main<INPUT, OUTPUT>(
     .option(...outputOption)
     .option('-x, --force', 'do not prompt before removing files')
     .addHelpText('after', extraHelp)
-    .action(wrap(clean, ensemble, additionalModels));
+    .action(wrap(clean, additionalModels));
+
+  const storeCommand = program
+    .command('store')
+    .description('store related commands');
+
+  storeCommand
+    .command('find')
+    .description('find a testcase in the store')
+    .option(...envOption)
+    .option(...storeOption)
+    .option('--input <input>', 'input to find')
+    .addHelpText(
+      'after',
+      '\nExample:\nlm-flow store find --store=./store --input=test'
+    )
+    .action(wrap(store.find.bind(store), additionalModels));
+
+  storeCommand
+    .command('insert')
+    .description('insert testcases into the store')
+    .option(...envOption)
+    .option(...storeOption)
+    .option(...dryrunOption)
+    .option('--file <file>', 'file to insert')
+    .action(wrap(store.insert.bind(store), additionalModels));
+
+  storeCommand
+    .command('upsert')
+    .description('upsert testcases into the store')
+    .option(...envOption)
+    .option(...storeOption)
+    .option(...dryrunOption)
+    .option('--file <file>', 'file to upsert')
+    .action(wrap(store.upsert.bind(store), additionalModels));
 
   program.addHelpText('after', extraHelp);
   await program.parseAsync();

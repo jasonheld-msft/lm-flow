@@ -5,7 +5,6 @@ import {rimraf} from 'rimraf';
 
 import {Configuration} from './configure.js';
 import {filesFromFolder, pluralize} from '../shared/index.js';
-import {AnyLink} from '../index.js';
 
 export interface CleanOptions {
   dryrun?: boolean;
@@ -15,8 +14,6 @@ export interface CleanOptions {
 
 export async function clean(
   configuration: Configuration,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ensemble: AnyLink<any, any>,
   options: CleanOptions
 ) {
   const logger = configuration.logger;
