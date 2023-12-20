@@ -1,16 +1,28 @@
 import {assert} from 'chai';
+import fs from 'fs';
 import yaml from 'js-yaml';
+import {fs as memfs, vol} from 'memfs';
 import 'mocha';
-import mockFs from 'mock-fs';
+import path from 'path';
+import sinon from 'sinon';
 
 import {
   parseStoreTestCaseFromFile,
   FileStore,
   StoreTestCase,
 } from '../../../src/lib/store/filestore.js';
-import FileSystem from 'mock-fs/lib/filesystem.js';
 import {Configuration} from '../../../src/lib/app/configure.js';
 import {AvailableModels, Logger} from '../../../src/index.js';
+import {
+  IMkdirOptions,
+  IWriteFileOptions,
+} from 'memfs/lib/node/types/options.js';
+
+// Necessary for memfs Blob (dom) reference
+declare global {
+  type ReadableStream = unknown;
+  type Blob = unknown;
+}
 
 describe('FileStore', () => {
   const store = new FileStore();
@@ -52,6 +64,33 @@ describe('FileStore', () => {
     expected: 'test',
     score: 2,
   };
+  beforeEach(() => {
+    sinon.stub(fs, 'existsSync').callsFake(path => {
+      return memfs.existsSync(path);
+    });
+    sinon.stub(fs.promises, 'readFile').callsFake(async path => {
+      return await memfs.promises.readFile(path as string);
+    });
+    sinon.stub(fs.promises, 'mkdir').callsFake(async (path, options) => {
+      return await memfs.promises.mkdir(
+        path as string,
+        options as IMkdirOptions
+      );
+    });
+    sinon
+      .stub(fs.promises, 'writeFile')
+      .callsFake(async (path, data, options) => {
+        return await memfs.promises.writeFile(
+          path as string,
+          data,
+          options as IWriteFileOptions
+        );
+      });
+  });
+  afterEach(() => {
+    sinon.restore();
+    vol.reset();
+  });
   describe('validateStoreTestCasesToInsert', () => {
     it('should error on duplicates', () => {
       assert.throws(() => {
@@ -92,14 +131,10 @@ describe('FileStore', () => {
   });
 
   describe('find', () => {
-    afterEach(() => {
-      mockFs.restore();
-    });
     it('should find file if it exists', async () => {
-      const files: FileSystem.DirectoryItems = {};
-      files[`${store.inputToFilename('test', 'mockStore')}.yaml`] =
-        'mockFileContents';
-      mockFs(files);
+      const filename = `${store.inputToFilename('test', 'mockStore')}.yaml`;
+      await memfs.promises.mkdir(path.dirname(filename), {recursive: true});
+      await memfs.promises.writeFile(filename, 'mockFileContents');
 
       try {
         await store.find(configuration, {input: 'test'});
@@ -108,8 +143,6 @@ describe('FileStore', () => {
       }
     });
     it('should throw error if file does not exist', async () => {
-      mockFs({});
-
       try {
         await store.find(configuration, {input: 'test'});
         assert.fail('Should have thrown error');
@@ -120,29 +153,30 @@ describe('FileStore', () => {
   });
 
   describe('insert', () => {
-    afterEach(() => {
-      mockFs.restore();
-    });
     it('should insert testcase if it does not exist', async () => {
-      const files: FileSystem.DirectoryItems = {};
-      files['test.yaml'] = yaml.dump(testcase);
-      mockFs(files);
+      await memfs.promises.writeFile('/test.yaml', yaml.dump(testcase));
 
       try {
-        await store.insert(configuration, {file: 'test.yaml'});
+        await store.insert(configuration, {file: '/test.yaml'});
       } catch (e) {
+        console.log((e as Error).stack);
         assert.fail((e as Error).message);
       }
+
+      assert.isTrue(
+        memfs.existsSync(
+          `${store.inputToFilename(testcase.input, 'mockStore')}.yaml`
+        )
+      );
     });
     it('should not insert testcase if it already exists', async () => {
-      const files: FileSystem.DirectoryItems = {};
-      files['test.yaml'] = yaml.dump(testcase);
-      files[`${store.inputToFilename(testcase.input, 'mockStore')}.yaml`] =
-        yaml.dump(testcase);
-      mockFs(files);
+      const filename = `${store.inputToFilename('test', 'mockStore')}.yaml`;
+      await memfs.promises.mkdir(path.dirname(filename), {recursive: true});
+      await memfs.promises.writeFile(filename, yaml.dump([testcase]));
+      await memfs.promises.writeFile('/test.yaml', yaml.dump(testcase));
 
       try {
-        await store.insert(configuration, {file: 'test.yaml'});
+        await store.insert(configuration, {file: '/test.yaml'});
         assert.fail('Should have thrown error');
       } catch (e) {
         console.log((e as Error).message);
@@ -152,22 +186,22 @@ describe('FileStore', () => {
   });
 
   describe('upsert', () => {
-    afterEach(() => {
-      mockFs.restore();
-    });
     it('should merge testcase if it already exists', async () => {
-      const files: FileSystem.DirectoryItems = {};
-      files['test.yaml'] = yaml.dump(testcaseDuplicate);
-
       const storeFilename = `${store.inputToFilename(
         testcase.input,
         'mockStore'
       )}.yaml`;
-      files[storeFilename] = yaml.dump(testcase);
-      mockFs(files);
+      await memfs.promises.writeFile(
+        '/test.yaml',
+        yaml.dump(testcaseDuplicate)
+      );
+      await memfs.promises.mkdir(path.dirname(storeFilename), {
+        recursive: true,
+      });
+      await memfs.promises.writeFile(storeFilename, yaml.dump([testcase]));
 
       try {
-        await store.upsert(configuration, {file: 'test.yaml'});
+        await store.upsert(configuration, {file: '/test.yaml'});
 
         // Check if merged
         const result = await parseStoreTestCaseFromFile(storeFilename);
@@ -175,13 +209,48 @@ describe('FileStore', () => {
         if (!result.success) {
           throw new Error('Failed to parse file');
         }
-
         if (Array.isArray(result.data)) {
           assert.equal(result.data[0].score, 2);
         } else {
           throw new Error('Store data should always be an array');
         }
       } catch (e) {
+        assert.fail((e as Error).message);
+      }
+    });
+  });
+
+  describe('select', () => {
+    it('should select testcases if they exist', async () => {
+      const storeFilename = `${store.inputToFilename(
+        testcase.input,
+        'mockStore'
+      )}.yaml`;
+
+      await memfs.promises.writeFile('/test.yaml', yaml.dump(testcase));
+
+      try {
+        await store.insert(configuration, {file: '/test.yaml'});
+        const result = await parseStoreTestCaseFromFile(storeFilename);
+        if (!result.success) {
+          throw new Error('Failed to parse file');
+        }
+
+        await store.select(configuration, {file: 'out.yaml'});
+
+        const out = await parseStoreTestCaseFromFile('out.yaml');
+        if (!out.success) {
+          throw new Error('Failed to parse file');
+        }
+
+        if (Array.isArray(out.data)) {
+          assert.deepEqual(out.data, [testcase]);
+        } else {
+          throw new Error('Store data should always be an array');
+        }
+      } catch (e) {
+        console.log(e as Error);
+        console.log((e as Error).stack);
         assert.fail((e as Error).message);
       }
     });

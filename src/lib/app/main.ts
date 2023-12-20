@@ -181,6 +181,16 @@ export async function main<INPUT, OUTPUT>(
     .option('--file <file>', 'file to upsert')
     .action(wrap(store.upsert.bind(store), additionalModels));
 
+  storeCommand
+    .command('select')
+    .description('select testcases from the store')
+    .option(...envOption)
+    .option(...storeOption)
+    .option(...dryrunOption)
+    .option('--file <file', 'file to write to')
+    .option('--tag <tag...>', 'tag to filter by')
+    .action(wrap(store.select.bind(store), additionalModels));
+
   program.addHelpText('after', extraHelp);
   await program.parseAsync();
 }

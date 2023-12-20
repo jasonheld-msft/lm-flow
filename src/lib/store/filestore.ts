@@ -3,12 +3,13 @@ import yaml from 'js-yaml';
 import path from 'path';
 import fs from 'fs';
 import prompt from 'prompt-sync';
+import {z} from 'zod';
+import {generateErrorMessage} from 'zod-error';
 
 import {Configuration} from '../app/configure.js';
+import {walk} from '../shared/index.js';
 
-import {FindOptions, IStore, InsertOptions} from './types.js';
-import {generateErrorMessage} from 'zod-error';
-import {z} from 'zod';
+import {FindOptions, IStore, InsertOptions, SelectOptions} from './types.js';
 
 /*
 - boolean expression parser evaluator
@@ -37,7 +38,9 @@ export async function parseStoreTestCaseFromFile(
 ): Promise<z.SafeParseReturnType<any, StoreTestCase | StoreTestCase[]>> {
   const {ext} = path.parse(filepath);
   if (ext !== '.yaml' && ext !== '.json') {
-    throw new Error(`File ${filepath} format unknown.`);
+    throw new Error(
+      `File ${filepath} format unknown.  Expected .yaml or .json.`
+    );
   }
 
   const text = (await fs.promises.readFile(filepath)).toString('utf-8');
@@ -67,12 +70,10 @@ export class FileStore implements IStore {
         options.input,
         configuration.storeFolder
       );
-      try {
-        await fs.promises.access(`${filename}.yaml`);
-        configuration.logger.info(`Path to file: ${filename}.yaml`, 1);
-      } catch {
+      if (!fs.existsSync(`${filename}.yaml`)) {
         throw new Error(`Path ${filename}.yaml does not exist.`);
       }
+      configuration.logger.info(`Path to file: ${filename}.yaml`, 1);
     }
   }
 
@@ -108,6 +109,46 @@ export class FileStore implements IStore {
       return;
     }
     await this.confirmWriteList(writeList, configuration);
+  }
+
+  async select(configuration: Configuration, options: SelectOptions) {
+    if (!options.file) {
+      throw new Error('No file specified. --file');
+    }
+    if (options.tag) {
+      console.log(options.tag);
+    }
+
+    const stack = [];
+    for await (const file of walk(configuration.storeFolder)) {
+      // TODO: Should we validate on the way out of the store?
+      const fileTestCases = await parseStoreTestCaseFromFile(file);
+      if (!fileTestCases.success) {
+        throw new Error(`Failed to parse file ${file}`);
+      }
+      const testCases = Array.isArray(fileTestCases.data)
+        ? fileTestCases.data
+        : [fileTestCases.data];
+      if (options.tag) {
+        stack.push(
+          ...testCases.filter(testCase => {
+            return options.tag!.every(tag => {
+              return testCase.tags?.includes(tag);
+            });
+          })
+        );
+      } else {
+        stack.push(...testCases);
+      }
+
+      if (stack.length > 100) {
+        fs.promises.writeFile(options.file, yaml.dump(stack), {flag: 'w+'});
+        stack.length = 0;
+      }
+    }
+    if (stack.length > 0) {
+      fs.promises.writeFile(options.file, yaml.dump(stack), {flag: 'w+'});
+    }
   }
 
   async update() {}
@@ -186,7 +227,7 @@ export class FileStore implements IStore {
         await fs.promises.writeFile(
           filename,
           yaml.dump(writeList[filename].map(x => x[1])),
-          {flag: 'wx'}
+          {flag: 'w+'}
         );
       }
     }
@@ -209,7 +250,7 @@ export class FileStore implements IStore {
     writeList: StoreWriteList,
     testcase: StoreTestCase,
     configuration: Configuration,
-    upsert = false
+    isUpsert = false
   ): Promise<boolean> {
     const filename = `${this.inputToFilename(
       testcase.input,
@@ -232,7 +273,7 @@ export class FileStore implements IStore {
           result.data.some(t => t.uuid === testcase.uuid))
       ) {
         // Test case exists
-        if (!upsert) {
+        if (!isUpsert) {
           configuration.logger.warning(
             `Test case ${testcase.uuid} already exists in file "${filename}".`,
             1
@@ -273,7 +314,7 @@ export class FileStore implements IStore {
   private async getWriteList(
     testcases: StoreTestCase[],
     configuration: Configuration,
-    upsert = false
+    isUpsert = false
   ) {
     let testcasesInserted = 0;
     const writeList: StoreWriteList = {};
@@ -284,7 +325,7 @@ export class FileStore implements IStore {
           writeList,
           testcase,
           configuration,
-          upsert
+          isUpsert
         )
       ) {
         testcasesInserted++;

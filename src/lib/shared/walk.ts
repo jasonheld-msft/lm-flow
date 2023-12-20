@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
 
 export async function* walk(dir: string): AsyncGenerator<string> {

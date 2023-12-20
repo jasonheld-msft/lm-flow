@@ -8,6 +8,11 @@ export interface InsertOptions {
   file?: string;
 }
 
+export interface SelectOptions {
+  file?: string;
+  tag?: string[];
+}
+
 export interface UpsertOptions {
   file?: string;
 }
