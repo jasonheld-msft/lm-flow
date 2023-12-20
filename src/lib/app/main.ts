@@ -189,6 +189,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...dryrunOption)
     .option('--file <file', 'file to write to')
     .option('--tag <tag...>', 'tag to filter by')
+    .option('--format <format>', 'format to write to ([yaml]|json|csv)')
     .action(wrap(store.select.bind(store), additionalModels));
 
   program.addHelpText('after', extraHelp);

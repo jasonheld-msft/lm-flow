@@ -9,7 +9,13 @@ import {generateErrorMessage} from 'zod-error';
 import {Configuration} from '../app/configure.js';
 import {walk} from '../shared/index.js';
 
-import {FindOptions, IStore, InsertOptions, SelectOptions} from './types.js';
+import {
+  FileFormat,
+  FindOptions,
+  IStore,
+  InsertOptions,
+  SelectOptions,
+} from './types.js';
 
 /*
 - boolean expression parser evaluator
@@ -61,6 +67,54 @@ export function mergeTestCases(a: StoreTestCase, b: StoreTestCase) {
     comment: b.comment ?? a.comment, // favor new comment
     tags: [...new Set((a.tags ?? []).concat(b.tags ?? []))], // merge tags,
   };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function flattenObject(obj: {[key: string]: any}, prefix = '') {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const flattened: {[key: string]: any} = {};
+  Object.keys(obj).forEach(key => {
+    const value = obj[key];
+    const newKey = prefix ? `${prefix}_${key}` : key;
+    if (
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
+      Object.assign(flattened, flattenObject(value, newKey));
+    } else {
+      flattened[newKey] = value;
+    }
+  });
+  return flattened;
+}
+
+export function testcasesToCsv(testcases: StoreTestCase[]) {
+  const flattened = testcases.map(testcase => flattenObject(testcase));
+  const keys = [
+    ...new Set(flattened.flatMap(testcase => Object.keys(testcase))),
+  ];
+  return [
+    keys.join(','),
+    ...flattened.map(testcase => {
+      return keys
+        .map(key => (key in testcase ? JSON.stringify(testcase[key]) : ''))
+        .join(',');
+    }),
+  ].join('\n');
+}
+
+export function getFormattedTestCases(
+  testcases: StoreTestCase[],
+  format: FileFormat = FileFormat.YAML
+): string {
+  if (format === FileFormat.JSON) {
+    return JSON.stringify(testcases);
+  } else if (format === FileFormat.CSV) {
+    return testcasesToCsv(testcases);
+  }
+  return yaml.dump(testcases);
 }
 
 export class FileStore implements IStore {
@@ -116,10 +170,11 @@ export class FileStore implements IStore {
       throw new Error('No file specified. --file');
     }
     if (options.tag) {
-      console.log(options.tag);
+      configuration.logger.info(`Filtering by tags: ${options.tag}`, 1);
     }
 
     const stack = [];
+    let totalTestCases = 0;
     for await (const file of walk(configuration.storeFolder)) {
       // TODO: Should we validate on the way out of the store?
       const fileTestCases = await parseStoreTestCaseFromFile(file);
@@ -132,8 +187,8 @@ export class FileStore implements IStore {
       if (options.tag) {
         stack.push(
           ...testCases.filter(testCase => {
-            return options.tag!.every(tag => {
-              return testCase.tags?.includes(tag);
+            return testCase.tags?.some(tag => {
+              return options.tag!.includes(tag);
             });
           })
         );
@@ -142,13 +197,27 @@ export class FileStore implements IStore {
       }
 
       if (stack.length > 100) {
-        fs.promises.writeFile(options.file, yaml.dump(stack), {flag: 'w+'});
+        fs.promises.writeFile(
+          options.file,
+          getFormattedTestCases(stack, options.format),
+          {flag: 'w+'}
+        );
+        totalTestCases += stack.length;
         stack.length = 0;
       }
     }
     if (stack.length > 0) {
-      fs.promises.writeFile(options.file, yaml.dump(stack), {flag: 'w+'});
+      fs.promises.writeFile(
+        options.file,
+        getFormattedTestCases(stack, options.format),
+        {flag: 'w+'}
+      );
+      totalTestCases += stack.length;
     }
+    configuration.logger.info(
+      `Wrote ${totalTestCases} test cases to ${options.file}.`,
+      1
+    );
   }
 
   async update() {}
@@ -221,12 +290,15 @@ export class FileStore implements IStore {
             fileTestCases.push(testcase);
           }
         }
-        await fs.promises.writeFile(filename, yaml.dump(fileTestCases));
+        await fs.promises.writeFile(
+          filename,
+          getFormattedTestCases(fileTestCases)
+        );
       } else {
         await fs.promises.mkdir(path.dirname(filename), {recursive: true});
         await fs.promises.writeFile(
           filename,
-          yaml.dump(writeList[filename].map(x => x[1])),
+          getFormattedTestCases(writeList[filename].map(x => x[1])),
           {flag: 'w+'}
         );
       }

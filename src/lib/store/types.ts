@@ -8,8 +8,15 @@ export interface InsertOptions {
   file?: string;
 }
 
+export enum FileFormat {
+  YAML = 'yaml',
+  JSON = 'json',
+  CSV = 'csv',
+}
+
 export interface SelectOptions {
   file?: string;
+  format?: FileFormat;
   tag?: string[];
 }
 
