@@ -37,6 +37,7 @@ export type StoreTestCase = z.infer<typeof storeTestCase>;
 type StoreWriteList = {
   [filename: string]: [boolean, StoreTestCase][]; // (exists, testcase)
 };
+const csvColumns = ['uuid', 'tags', 'input', 'expected', 'score', 'comment'];
 
 export async function parseStoreTestCaseFromFile(
   filepath: string
@@ -90,29 +91,32 @@ export function flattenObject(obj: {[key: string]: any}, prefix = '') {
   return flattened;
 }
 
-export function testcasesToCsv(testcases: StoreTestCase[]) {
+export function testcasesToCsv(testcases: StoreTestCase[], csvKeys?: string[]) {
   const flattened = testcases.map(testcase => flattenObject(testcase));
-  const keys = [
+  const includeKeys = csvKeys === undefined;
+  csvKeys = csvKeys ?? [
     ...new Set(flattened.flatMap(testcase => Object.keys(testcase))),
   ];
-  return [
-    keys.join(','),
-    ...flattened.map(testcase => {
-      return keys
-        .map(key => (key in testcase ? JSON.stringify(testcase[key]) : ''))
-        .join(',');
-    }),
-  ].join('\n');
+  return (includeKeys ? [csvKeys.join(',')] : [])
+    .concat(
+      ...flattened.map(testcase => {
+        return csvKeys!
+          .map(key => (key in testcase ? JSON.stringify(testcase[key]) : ''))
+          .join(',');
+      })
+    )
+    .join('\n');
 }
 
 export function getFormattedTestCases(
   testcases: StoreTestCase[],
-  format: FileFormat = FileFormat.YAML
+  format: FileFormat = FileFormat.YAML,
+  csvKeys?: string[]
 ): string {
   if (format === FileFormat.JSON) {
     return JSON.stringify(testcases);
   } else if (format === FileFormat.CSV) {
-    return testcasesToCsv(testcases);
+    return testcasesToCsv(testcases, csvKeys);
   }
   return yaml.dump(testcases);
 }
@@ -197,20 +201,36 @@ export class FileStore implements IStore {
       }
 
       if (stack.length > 100) {
-        fs.promises.writeFile(
+        if (
+          totalTestCases === 0 &&
+          options.format &&
+          options.format === FileFormat.CSV
+        ) {
+          fs.promises.writeFile(options.file, csvColumns.join(',') + '\n', {
+            flag: 'w+',
+          });
+        }
+        fs.promises.appendFile(
           options.file,
-          getFormattedTestCases(stack, options.format),
-          {flag: 'w+'}
+          getFormattedTestCases(stack, options.format, csvColumns)
         );
         totalTestCases += stack.length;
         stack.length = 0;
       }
     }
     if (stack.length > 0) {
-      fs.promises.writeFile(
+      if (
+        totalTestCases === 0 &&
+        options.format &&
+        options.format === FileFormat.CSV
+      ) {
+        fs.promises.writeFile(options.file, csvColumns.join(',') + '\n', {
+          flag: 'w+',
+        });
+      }
+      fs.promises.appendFile(
         options.file,
-        getFormattedTestCases(stack, options.format),
-        {flag: 'w+'}
+        getFormattedTestCases(stack, options.format, csvColumns)
       );
       totalTestCases += stack.length;
     }

@@ -86,6 +86,21 @@ describe('FileStore', () => {
           options as IWriteFileOptions
         );
       });
+    sinon.stub(fs.promises, 'appendFile').callsFake(async (path, data) => {
+      return await memfs.promises.appendFile(path as string, data);
+    });
+    (
+      sinon.stub(fs.promises, 'readdir') as unknown as sinon.SinonStub<
+        [p: fs.PathLike],
+        Promise<string[]>
+      >
+    ).callsFake(async path => {
+      const dir = await memfs.promises.readdir(path as string);
+      return dir.map(d => d as string);
+    });
+    sinon.stub(fs.promises, 'stat').callsFake(async path => {
+      return (await memfs.promises.stat(path as string)) as fs.Stats;
+    });
   });
   afterEach(() => {
     sinon.restore();
@@ -236,9 +251,9 @@ describe('FileStore', () => {
           throw new Error('Failed to parse file');
         }
 
-        await store.select(configuration, {file: 'out.yaml'});
+        await store.select(configuration, {file: '/out.yaml'});
 
-        const out = await parseStoreTestCaseFromFile('out.yaml');
+        const out = await parseStoreTestCaseFromFile('/out.yaml');
         if (!out.success) {
           throw new Error('Failed to parse file');
         }

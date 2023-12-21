@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 
 export async function* walk(dir: string): AsyncGenerator<string> {
-  for await (const d of await fs.promises.opendir(dir)) {
-    const entry = path.posix.join(dir, d.name);
-    if (d.isDirectory()) yield* walk(entry);
-    else if (d.isFile()) yield path.join(dir, d.name);
+  const files = await fs.promises.readdir(dir);
+  for (const f of files) {
+    const entry = path.posix.join(dir, f);
+    const stat = await fs.promises.stat(entry);
+    if (stat.isDirectory()) yield* walk(entry);
+    else if (stat.isFile()) yield path.join(dir, f);
   }
 }
 
