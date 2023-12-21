@@ -42,4 +42,4 @@ yarn-error.log*
 data/runs
 
 # Store
-./store
+/store

@@ -188,51 +188,28 @@ export class FileStore implements IStore {
       const testCases = Array.isArray(fileTestCases.data)
         ? fileTestCases.data
         : [fileTestCases.data];
-      if (options.tag) {
-        stack.push(
-          ...testCases.filter(testCase => {
-            return testCase.tags?.some(tag => {
-              return options.tag!.includes(tag);
-            });
-          })
-        );
-      } else {
-        stack.push(...testCases);
-      }
+
+      stack.push(
+        ...(options.tag
+          ? this.filterTestCasesByTag(testCases, options.tag)
+          : testCases)
+      );
 
       if (stack.length > 100) {
-        if (
-          totalTestCases === 0 &&
-          options.format &&
-          options.format === FileFormat.CSV
-        ) {
-          fs.promises.writeFile(options.file, csvColumns.join(',') + '\n', {
-            flag: 'w+',
-          });
-        }
-        fs.promises.appendFile(
-          options.file,
-          getFormattedTestCases(stack, options.format, csvColumns)
+        totalTestCases = await this.writeSelectTestCasesToFile(
+          stack,
+          options,
+          totalTestCases
         );
-        totalTestCases += stack.length;
         stack.length = 0;
       }
     }
     if (stack.length > 0) {
-      if (
-        totalTestCases === 0 &&
-        options.format &&
-        options.format === FileFormat.CSV
-      ) {
-        fs.promises.writeFile(options.file, csvColumns.join(',') + '\n', {
-          flag: 'w+',
-        });
-      }
-      fs.promises.appendFile(
-        options.file,
-        getFormattedTestCases(stack, options.format, csvColumns)
+      totalTestCases = await this.writeSelectTestCasesToFile(
+        stack,
+        options,
+        totalTestCases
       );
-      totalTestCases += stack.length;
     }
     configuration.logger.info(
       `Wrote ${totalTestCases} test cases to ${options.file}.`,
@@ -287,7 +264,7 @@ export class FileStore implements IStore {
       }
     }
 
-    for (const filename in writeList) {
+    const writePromises = Object.keys(writeList).map(async filename => {
       if (fs.existsSync(filename)) {
         const result = await parseStoreTestCaseFromFile(filename);
         if (!result.success) {
@@ -322,7 +299,9 @@ export class FileStore implements IStore {
           {flag: 'w+'}
         );
       }
-    }
+    });
+
+    await Promise.all(writePromises);
   }
 
   private addToWriteList(
@@ -431,6 +410,36 @@ export class FileStore implements IStore {
     );
 
     return writeList;
+  }
+
+  private filterTestCasesByTag(
+    testCases: StoreTestCase[],
+    tags: string[]
+  ): StoreTestCase[] {
+    return testCases.filter(testCase =>
+      testCase.tags?.some(tag => tags.includes(tag))
+    );
+  }
+
+  private async writeSelectTestCasesToFile(
+    testCases: StoreTestCase[],
+    options: SelectOptions,
+    totalTestCases: number
+  ): Promise<number> {
+    if (
+      totalTestCases === 0 &&
+      options.format &&
+      options.format === FileFormat.CSV
+    ) {
+      await fs.promises.writeFile(options.file!, csvColumns.join(',') + '\n', {
+        flag: 'w+',
+      });
+    }
+    await fs.promises.appendFile(
+      options.file!,
+      getFormattedTestCases(testCases, options.format, csvColumns)
+    );
+    return totalTestCases + testCases.length;
   }
 
   validateStoreTestCasesToInsert(testcases: StoreTestCase | StoreTestCase[]) {
