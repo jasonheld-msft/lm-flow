@@ -24,6 +24,12 @@ export class Logger implements ILogger {
   _errors = 0;
   _info = 0;
   _warnings = 0;
+  isStdOut: boolean;
+
+  constructor(isStdOut = false) {
+    this.isStdOut = isStdOut;
+  }
+
   private records: {type: LogType; message: string}[] = [];
 
   log(type: LogType, message: string): void {
@@ -31,7 +37,9 @@ export class Logger implements ILogger {
       ++this._errors;
     } else if (type === LogType.INFO) {
       ++this._info;
-      console.log(message);
+      if (!this.isStdOut) {
+        console.log(message);
+      }
     } else {
       ++this._warnings;
     }

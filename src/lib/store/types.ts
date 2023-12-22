@@ -6,6 +6,7 @@ export interface FindOptions {
 
 export interface InsertOptions {
   file?: string;
+  stdin?: boolean;
 }
 
 export enum FileFormat {
@@ -17,6 +18,7 @@ export enum FileFormat {
 export interface SelectOptions {
   file?: string;
   format?: FileFormat;
+  stdout?: boolean;
   tag?: string[];
 }
 
@@ -27,6 +29,5 @@ export interface UpsertOptions {
 export interface IStore {
   find(configuration: Configuration, options: FindOptions): Promise<void>;
   insert(configuration: Configuration, options: InsertOptions): Promise<void>;
-  update(): Promise<void>;
   upsert(configuration: Configuration, options: UpsertOptions): Promise<void>;
 }

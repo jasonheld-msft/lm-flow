@@ -10,6 +10,14 @@ import {Configuration} from '../app/configure.js';
 import {walk} from '../shared/index.js';
 
 import {
+  StoreTestCase,
+  StoreWriteList,
+  csvColumns,
+  getFormattedTestCases,
+  mergeTestCases,
+  zodStoreTestCase,
+} from './testcase.js';
+import {
   FileFormat,
   FindOptions,
   IStore,
@@ -19,25 +27,8 @@ import {
 
 /*
 - boolean expression parser evaluator
-- write list
 - path.posix
-- structure lmflow command same as main, with sample?
 */
-export const storeTestCase = z.object({
-  uuid: z.string().uuid(),
-  // sha: z.string(),
-  tags: z.array(z.string()).optional(),
-  input: z.string(),
-  expected: z.string(),
-  context: z.any(),
-  score: z.number().optional(),
-  comment: z.string().optional(),
-});
-export type StoreTestCase = z.infer<typeof storeTestCase>;
-type StoreWriteList = {
-  [filename: string]: [boolean, StoreTestCase][]; // (exists, testcase)
-};
-const csvColumns = ['uuid', 'tags', 'input', 'expected', 'score', 'comment'];
 
 export async function parseStoreTestCaseFromFile(
   filepath: string
@@ -53,72 +44,9 @@ export async function parseStoreTestCaseFromFile(
   const text = (await fs.promises.readFile(filepath)).toString('utf-8');
   const obj = ext === '.yaml' ? yaml.load(text) : JSON.parse(text);
   if (Array.isArray(obj)) {
-    return storeTestCase.array().safeParse(obj);
+    return zodStoreTestCase.array().safeParse(obj);
   }
-  return storeTestCase.safeParse(obj);
-}
-
-export function mergeTestCases(a: StoreTestCase, b: StoreTestCase) {
-  return {
-    uuid: a.uuid,
-    input: a.input, // inputs are the same
-    expected: a.expected, // TODO: What do we do with expected?
-    context: a.context, // TODO: context?
-    score: b.score ?? a.score, // favor new score
-    comment: b.comment ?? a.comment, // favor new comment
-    tags: [...new Set((a.tags ?? []).concat(b.tags ?? []))], // merge tags,
-  };
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function flattenObject(obj: {[key: string]: any}, prefix = '') {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const flattened: {[key: string]: any} = {};
-  Object.keys(obj).forEach(key => {
-    const value = obj[key];
-    const newKey = prefix ? `${prefix}_${key}` : key;
-    if (
-      typeof value === 'object' &&
-      !(value instanceof Date) &&
-      value !== null &&
-      !Array.isArray(value)
-    ) {
-      Object.assign(flattened, flattenObject(value, newKey));
-    } else {
-      flattened[newKey] = value;
-    }
-  });
-  return flattened;
-}
-
-export function testcasesToCsv(testcases: StoreTestCase[], csvKeys?: string[]) {
-  const flattened = testcases.map(testcase => flattenObject(testcase));
-  const includeKeys = csvKeys === undefined;
-  csvKeys = csvKeys ?? [
-    ...new Set(flattened.flatMap(testcase => Object.keys(testcase))),
-  ];
-  return (includeKeys ? [csvKeys.join(',')] : [])
-    .concat(
-      ...flattened.map(testcase => {
-        return csvKeys!
-          .map(key => (key in testcase ? JSON.stringify(testcase[key]) : ''))
-          .join(',');
-      })
-    )
-    .join('\n');
-}
-
-export function getFormattedTestCases(
-  testcases: StoreTestCase[],
-  format: FileFormat = FileFormat.YAML,
-  csvKeys?: string[]
-): string {
-  if (format === FileFormat.JSON) {
-    return JSON.stringify(testcases);
-  } else if (format === FileFormat.CSV) {
-    return testcasesToCsv(testcases, csvKeys);
-  }
-  return yaml.dump(testcases);
+  return zodStoreTestCase.safeParse(obj);
 }
 
 export class FileStore implements IStore {
@@ -170,7 +98,7 @@ export class FileStore implements IStore {
   }
 
   async select(configuration: Configuration, options: SelectOptions) {
-    if (!options.file) {
+    if (!options.stdout && !options.file) {
       throw new Error('No file specified. --file');
     }
     if (options.tag) {
@@ -216,8 +144,6 @@ export class FileStore implements IStore {
       1
     );
   }
-
-  async update() {}
 
   async upsert(configuration: Configuration, options: InsertOptions) {
     await this.insert(configuration, options, true);
@@ -431,14 +357,26 @@ export class FileStore implements IStore {
       options.format &&
       options.format === FileFormat.CSV
     ) {
-      await fs.promises.writeFile(options.file!, csvColumns.join(',') + '\n', {
-        flag: 'w+',
-      });
+      if (options.stdout) {
+        console.log(csvColumns.join(',') + '\n');
+      } else {
+        await fs.promises.writeFile(
+          options.file!,
+          csvColumns.join(',') + '\n',
+          {
+            flag: 'w+',
+          }
+        );
+      }
     }
-    await fs.promises.appendFile(
-      options.file!,
-      getFormattedTestCases(testCases, options.format, csvColumns)
-    );
+    if (options.stdout) {
+      console.log(getFormattedTestCases(testCases, options.format, csvColumns));
+    } else {
+      await fs.promises.appendFile(
+        options.file!,
+        getFormattedTestCases(testCases, options.format, csvColumns)
+      );
+    }
     return totalTestCases + testCases.length;
   }
 

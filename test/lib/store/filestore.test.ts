@@ -10,7 +10,7 @@ import {
   parseStoreTestCaseFromFile,
   FileStore,
   StoreTestCase,
-} from '../../../src/lib/store/filestore.js';
+} from '../../../src/lib/store/index.js';
 import {Configuration} from '../../../src/lib/app/configure.js';
 import {AvailableModels, Logger} from '../../../src/index.js';
 import {

@@ -80,7 +80,7 @@ export function wrap<
 ): (this: Command, options: OPTIONS) => Promise<void> {
   // NOTE: cannot use an arrow function here because of the this: parameter.
   async function wrapper(this: Command, options: OPTIONS) {
-    const logger = new Logger();
+    const logger = new Logger(options.stdout);
 
     const date = new Date();
     logger.info(
@@ -117,7 +117,11 @@ export function wrap<
         logger.error('Unknown error during configuration.');
       }
     } finally {
-      console.log(logger.format());
+      if (options.stdout) {
+        console.error(logger.format());
+      } else {
+        console.log(logger.format());
+      }
       if (logger.hasErrors()) {
         logger.info('Command aborted.', 1);
         // eslint-disable-next-line no-process-exit
