@@ -7,7 +7,8 @@ import path from 'path';
 import sinon from 'sinon';
 
 import {
-  parseStoreTestCaseFromFile,
+  parseStoreTestCase,
+  getDataFromFile,
   FileStore,
   StoreTestCase,
 } from '../../../src/lib/store/index.js';
@@ -219,7 +220,7 @@ describe('FileStore', () => {
         await store.upsert(configuration, {file: '/test.yaml'});
 
         // Check if merged
-        const result = await parseStoreTestCaseFromFile(storeFilename);
+        const result = await parseStoreTestCase(getDataFromFile(storeFilename));
 
         if (!result.success) {
           throw new Error('Failed to parse file');
@@ -246,14 +247,14 @@ describe('FileStore', () => {
 
       try {
         await store.insert(configuration, {file: '/test.yaml'});
-        const result = await parseStoreTestCaseFromFile(storeFilename);
+        const result = await parseStoreTestCase(getDataFromFile(storeFilename));
         if (!result.success) {
           throw new Error('Failed to parse file');
         }
 
         await store.select(configuration, {file: '/out.yaml'});
 
-        const out = await parseStoreTestCaseFromFile('/out.yaml');
+        const out = await parseStoreTestCase(getDataFromFile('/out.yaml'));;
         if (!out.success) {
           throw new Error('Failed to parse file');
         }

@@ -30,10 +30,21 @@ import {
 - path.posix
 */
 
-export async function parseStoreTestCaseFromFile(
+export function parseStoreTestCase(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): z.SafeParseReturnType<any, StoreTestCase | StoreTestCase[]> {
+  if (Array.isArray(obj)) {
+    return zodStoreTestCase.array().safeParse(obj);
+  }
+  return zodStoreTestCase.safeParse(obj);
+}
+
+export async function getDataFromFile(
   filepath: string
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Promise<z.SafeParseReturnType<any, StoreTestCase | StoreTestCase[]>> {
+): Promise<any> {
   const {ext} = path.parse(filepath);
   if (ext !== '.yaml' && ext !== '.json') {
     throw new Error(
@@ -42,11 +53,7 @@ export async function parseStoreTestCaseFromFile(
   }
 
   const text = (await fs.promises.readFile(filepath)).toString('utf-8');
-  const obj = ext === '.yaml' ? yaml.load(text) : JSON.parse(text);
-  if (Array.isArray(obj)) {
-    return zodStoreTestCase.array().safeParse(obj);
-  }
-  return zodStoreTestCase.safeParse(obj);
+  return ext === '.yaml' ? yaml.load(text) : JSON.parse(text);
 }
 
 export class FileStore implements IStore {
@@ -68,19 +75,10 @@ export class FileStore implements IStore {
     options: InsertOptions,
     isUpsert = false
   ) {
-    if (!options.file) {
-      throw new Error('No file specified. --file');
+    if (!options.file && !options.stdin) {
+      throw new Error('--stdin or --file is required.');
     }
-    if (!fs.existsSync(options.file)) {
-      throw new Error(`File ${options.file} does not exist.`);
-    }
-
-    const result = await parseStoreTestCaseFromFile(options.file);
-    if (!result.success) {
-      const zodError = generateErrorMessage(result.error.issues);
-      const errorMessage = `In ${options.file}: ${zodError}`;
-      throw new Error(errorMessage);
-    }
+    const result = await this.getTestCaseData(options.file);
 
     this.validateStoreTestCasesToInsert(result.data);
 
@@ -109,7 +107,7 @@ export class FileStore implements IStore {
     let totalTestCases = 0;
     for await (const file of walk(configuration.storeFolder)) {
       // TODO: Should we validate on the way out of the store?
-      const fileTestCases = await parseStoreTestCaseFromFile(file);
+      const fileTestCases = await this.getTestCaseData(file);
       if (!fileTestCases.success) {
         throw new Error(`Failed to parse file ${file}`);
       }
@@ -166,6 +164,29 @@ export class FileStore implements IStore {
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private parseAndCheck(data: any) {
+    const result = parseStoreTestCase(data);
+    if (!result.success) {
+      const zodError = generateErrorMessage(result.error.issues);
+      const errorMessage = `Error parsing test cases: ${zodError}`;
+      throw new Error(errorMessage);
+    }
+    return result;
+  }
+
+  private async getTestCaseData(filepath?: string) {
+    if (filepath) {
+      if (!fs.existsSync(filepath)) {
+        throw new Error(`File ${filepath} does not exist.`);
+      }
+      return this.parseAndCheck(await getDataFromFile(filepath));
+    } else {
+      const data = fs.readFileSync(0, 'utf-8');
+      return this.parseAndCheck(yaml.load(data));
+    }
+  }
+
   // Options
   // [#1]: writeList stores cases to write to each file, confirm does
   //     the work of merging with existing cases in file
@@ -192,12 +213,7 @@ export class FileStore implements IStore {
 
     const writePromises = Object.keys(writeList).map(async filename => {
       if (fs.existsSync(filename)) {
-        const result = await parseStoreTestCaseFromFile(filename);
-        if (!result.success) {
-          const zodError = generateErrorMessage(result.error.issues);
-          const errorMessage = `In ${filename}: ${zodError}`;
-          throw new Error(errorMessage);
-        }
+        const result = await this.getTestCaseData(filename);
         let fileTestCases = Array.isArray(result.data)
           ? result.data
           : [result.data];
@@ -257,12 +273,7 @@ export class FileStore implements IStore {
 
     if (fileExists) {
       // Check if test case exists in file
-      const result = await parseStoreTestCaseFromFile(filename);
-      if (!result.success) {
-        const zodError = generateErrorMessage(result.error.issues);
-        const errorMessage = `In ${filename}: ${zodError}`;
-        throw new Error(errorMessage);
-      }
+      const result = await this.getTestCaseData(filename);
 
       if (
         (!Array.isArray(result.data) && result.data.uuid === testcase.uuid) ||

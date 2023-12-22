@@ -170,6 +170,7 @@ export async function main<INPUT, OUTPUT>(
     .option(...storeOption)
     .option(...dryrunOption)
     .option('--file <file>', 'file to insert')
+    .option('--stdin', 'read from stdin')
     .action(wrap(store.insert.bind(store), additionalModels));
 
   storeCommand
